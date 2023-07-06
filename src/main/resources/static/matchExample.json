@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "data_version": "5",
+    "match_id": "EUW1_6483434061",
+    "participants": [
+      "NVt3cEUlZ95nzR9zaPRA_EYRvEB3zKkYVgcE2J7vLXWxJcAOEn9GhWCPriVOkgtKRfuKb6VqBalsUA",
+      "XXnT5cZew40aCAeRBBk_aRg5vXG9cFdVTFOwtzJ7foQIXyy08VWjjk0WqkpxnviiDbUm3i8idvj80w",
+      "JIS_jB41MB0-W9CUr-eHJ_0l5uDd1_htDiy603eLirQoSIxiPqrYJ_Cb2UB1xYLhxGEl41oDI_knoQ",
+      "PbehKkjRrNApiTrB_Q5IH5a0EAozAHNRFdd_ObZQW1c4Pt3ZL22A-gt1kFPOaxpERXRCPSQWpy7kNQ",
+      "O_XtgvwaQUIA8I18rddwArAUfoWRFQG_8OyXfXhgx0dvcvvqy1GDk0dABoA_DMt__wh2ZBE0hIVy4Q",
+      "CVFR9JXvcRIFQ1mtMFhN24r2ki-yk0Wvoe33p4QcOMdjA6HQcK3LVM5lxPcPJS7DbJAfVYhRxzPAzw",
+      "m5hT8Z6QAhdWtV0Ja1n46mCfkI7WICzZryDtn7txDE8JPrmiIkpflM7iPNznxFp4b4tOxgPb4kxYrA",
+      "MCAtfdvmm6xtnYyPugEUEyjnbhrD3N6EZAe_ifepXE5BPusO4yBLBPXdLLxEpd27JGeC9KB448JWBA"
+    ]
+  },
+  "info": {
+    "game_datetime": 1688509050293,
+    "game_length": 1238.2259521484375,
+    "game_version": "Version 13.13.518.0539 (Jun 28 2023/03:11:33) [PUBLIC] ",
+    "participants": [
+      {
+        "augments": [
+          "TFT9_Augment_WanderingTrainer",
+          "TFT6_Augment_PandorasItems",
+          "TFT9_Augment_ChallengerEmblem2"
+        ],
+        "companion": {
+          "content_ID": "b890d4df-181a-43da-861d-99a72afbc602",
+          "item_ID": 38002,
+          "skin_ID": 2,
+          "species": "PetChibiYasuo"
+        },
+        "gold_left": 2,
+        "last_round": 21,
+        "level": 9,
+        "placement": 2,
+        "players_eliminated": 1,
+        "puuid": "NVt3cEUlZ95nzR9zaPRA_EYRvEB3zKkYVgcE2J7vLXWxJcAOEn9GhWCPriVOkgtKRfuKb6VqBalsUA",
+        "time_eliminated": 1229.01025390625,
+        "total_damage_to_players": 30,
+        "traits": [
+          {
+            "name": "Set9_BandleCity",
+            "num_units": 1,
+            "style": 0,
+            "tier_current": 0,
+            "tier_total": 2
+          }
+        ],
+        "units": [
+          {
+            "character_id": "TFT9_Viego",
+            "itemNames": [],
+            "name": "",
+            "rarity": 0,
+            "tier": 1
+          }
+        ]
+      }
+    ],
+    "queue_id": 1130,
+    "tft_game_type": "turbo",
+    "tft_set_core_name": "TFTSet9",
+    "tft_set_number": 9
+  }
+}
