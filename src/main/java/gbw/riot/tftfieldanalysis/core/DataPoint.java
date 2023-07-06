@@ -1,14 +1,12 @@
-package gbw.riot.tftfieldanalysis;
+package gbw.riot.tftfieldanalysis.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class DataPoint {
     private static final List<String> EMPTY = new ArrayList<>();
     private final String namespaceKey;
     private HashMap<String, List<String>> tags;
+    private final int id = this.hashCode();
 
     public DataPoint(String namespaceKey)
     {
@@ -29,6 +27,8 @@ public class DataPoint {
         return tags.get(key).add(value);
     }
 
-    
+    public int getCombinedHash(DataPoint pointB){
+        return Objects.hash(this, pointB);
+    }
 
 }

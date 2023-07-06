@@ -1,8 +1,10 @@
-package gbw.riot.tftfieldanalysis;
+package gbw.riot.tftfieldanalysis.core;
 
+import java.util.HashSet;
 import java.util.List;
 
 public record MatchData(Metadata metadata, Info info) {
+
     public record Metadata(String data_version, String match_id, List<String> participants) {}
 
     public record Info(long game_datetime, double game_length, String game_version, List<Participant> participants) {
