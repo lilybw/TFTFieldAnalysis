@@ -1,13 +1,44 @@
 package gbw.riot.tftfieldanalysis.core;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.*;
 
 public class DataModel {
 
-    private final HashMap<DataPoint, HashSet<Edge>> edgeSetForPoint = new HashMap<>();
-    private final HashMap<Integer, Edge> edgeTable = new HashMap<>();
-    private final HashMap<String,HashSet<DataPoint>> pointsNamespaceMap = new HashMap<>();
+    @JsonProperty
+    private final Map<Integer, Set<Edge>> edgeSetForPoint = new HashMap<>();
+    @JsonProperty
+    private final Map<Integer, Edge> edgeTable = new HashMap<>();
+    @JsonProperty
+    private final Map<String,Set<DataPoint>> pointsNamespaceMap = new HashMap<>();
 
+    private final Set<DataPoint> allPoints = new HashSet<>();
+    private final Map<Integer,DataPoint> pointIdMap = new HashMap<>();
+    private final Set<Edge> allEdges = new HashSet<>();
+
+
+    public Set<DataPoint> getPointsInNamespace(String namespace){
+        pointsNamespaceMap.computeIfAbsent(namespace, k -> new HashSet<>());
+        return pointsNamespaceMap.get(namespace);
+    }
+    public Set<DataPoint> getAllPoints(){
+        return allPoints;
+    }
+    public Map<Integer,DataPoint> getPointMap(){
+        return pointIdMap;
+    }
+    public Set<Edge> getAllEdges(){
+        return allEdges;
+    }
+
+    public Map<Integer,Set<Edge>> getEdgesForPoints(Integer[] points){
+        Map<Integer,Set<Edge>> toReturn = new HashMap<>();
+        for(Integer i : points){
+            toReturn.put(i, edgeSetForPoint.get(i));
+        }
+        return toReturn;
+    }
 
     /**
      * Returns false if that point already existed
@@ -23,6 +54,8 @@ public class DataModel {
         }
         DataPoint newPoint = new DataPoint(namespace, tags);
         pointsNamespaceMap.get(namespace).add(newPoint);
+        allPoints.add(newPoint);
+        pointIdMap.put(newPoint.hashCode(), newPoint);
         return true;
     }
 
@@ -34,8 +67,9 @@ public class DataModel {
         }
         Edge edge = new Edge(pointA, pointB);
         edgeTable.put(combinedHash, edge);
-        edgeSetForPoint.computeIfAbsent(pointA, k -> new HashSet<>()).add(edge);
-        edgeSetForPoint.computeIfAbsent(pointB, k -> new HashSet<>()).add(edge);
+        allEdges.add(edge);
+        edgeSetForPoint.computeIfAbsent(pointA.hashCode(), k -> new HashSet<>()).add(edge);
+        edgeSetForPoint.computeIfAbsent(pointB.hashCode(), k -> new HashSet<>()).add(edge);
     }
 
     public Set<String> getNamespaces(){

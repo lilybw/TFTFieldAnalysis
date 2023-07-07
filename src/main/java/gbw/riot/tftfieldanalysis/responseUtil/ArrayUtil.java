@@ -17,6 +17,10 @@ public class ArrayUtil {
     public interface BooleanFunction<T> {
         boolean eval(T o);
     }
+    @FunctionalInterface
+    public interface VoidFunction<T> {
+        void eval(T o);
+    }
 
     /**
      * Function checking if a given object is a valid Integer using Integer.parseInt(Obj)
@@ -66,10 +70,14 @@ public class ArrayUtil {
     }
 
     public static <T> T[] resize(T[] arr, BooleanFunction<T> includeFunc){
+        return filter(arr, includeFunc, obj -> {});
+    }
+    public static <T> T[] filter(T[] arr, BooleanFunction<T> filterFunc, VoidFunction<T> onFilterEvent){
         List<T> toReturn = new ArrayList<>();
         for(T obj : arr){
-            if(includeFunc.eval(obj)){
+            if(filterFunc.eval(obj)){
                 toReturn.add(obj);
+                onFilterEvent.eval(obj);
             }
         }
         return (T[]) toReturn.toArray(); //oh java, you poor thing.
@@ -163,6 +171,22 @@ public class ArrayUtil {
             }
         }
         return false;
+    }
+
+    public static String[] fromIntArrayToString(Integer[] arr){
+        return fromIntArrayToString(
+                Arrays.stream(arr).mapToInt(Integer::intValue).toArray()
+        );
+    }
+
+    public static String[] fromIntArrayToString(int[] arr){
+        return Arrays.stream(arr)
+                .mapToObj(String::valueOf)
+                .toArray(String[]::new);
+    }
+
+    public static List<String> fromIntArrayToStringList(Integer[] arr){
+        return Arrays.stream(arr).map(String::valueOf).toList();
     }
 
     /**
