@@ -21,7 +21,7 @@ public class Edge {
         EDGE_MAP_FOR_POINT.computeIfAbsent(pointB, k -> new HashSet<>()).add(edge);
     }
 
-    private Edge(DataPoint pA, DataPoint pB){
+    Edge(DataPoint pA, DataPoint pB){
         this.pointA = pA;
         this.pointB = pB;
         value++;

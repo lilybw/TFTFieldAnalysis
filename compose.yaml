@@ -1,2 +1,10 @@
 services:
-  backend:
+  database:
+    container_name: tftfa-db
+    image: 'mysql:8.0.18'
+    environment:
+      MYSQL_DATABASE: tftfa-db
+      MYSQL_ROOT_PASSWORD: wh4t4s3cr3t
+      MYSQL_ROOT_USER: tftfa
+    ports:
+      - "13497:3306"

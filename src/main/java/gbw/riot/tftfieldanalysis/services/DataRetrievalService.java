@@ -4,6 +4,7 @@ import gbw.riot.tftfieldanalysis.core.MatchData;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.JSONWrapper;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,14 +33,22 @@ public class DataRetrievalService {
         this.getMatchIdsTemplate = restTemplateBuilder.build();
     }
 
+    private HttpEntity<?> getHeaders(){
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Riot-Token", "secret");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return new HttpEntity<>("",headers);
+    }
+
     public MatchData getMatchData(String matchId) {
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/"+matchId;
-        return this.getMatchDataTemplate.getForObject(url, MatchData.class);
+        ResponseEntity<MatchData> response =  this.getMatchDataTemplate.exchange(url, HttpMethod.GET, getHeaders(), MatchData.class);
+        return response.getBody();
     }
 
     public String[] getMatchIdsForPlayer(String playerPUUID){
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/by-puuid/"+playerPUUID+"/ids?start=0&count=20";
-        String fullUnparsed = this.getMatchIdsTemplate.getForObject(url, String.class);
+        String fullUnparsed = this.getMatchIdsTemplate.exchange(url, HttpMethod.GET, getHeaders(), String.class).getBody();
         return fullUnparsed == null ? new String[0] : JSONWrapper.parseValueArray(fullUnparsed);
     }
 
