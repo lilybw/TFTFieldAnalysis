@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/model")
@@ -37,12 +38,17 @@ public class DataModelController {
         if(model == null){
             return getResponseOnModelNotFound(id);
         }
-        ValueErrorTouple<Set<String>,Exception> result = trainer.run(model, maxMatchCount, patch);
+        ValueErrorTouple<Set<String>,Exception> result;
+        if(patch == null){
+            result = trainer.run(model, maxMatchCount);
+        }else{
+            result = trainer.run(model, maxMatchCount, patch);
+        }
 
         if(result.error() != null){
             return new ResponseEntity<>(
                     DetailedResponse.of(
-                            model.getId(),
+                            model.getMetaData().modelId(),
                             new ResponseDetails(
                                     "Issue Encountered While Training",
                                     result.error().getMessage(),
@@ -54,7 +60,7 @@ public class DataModelController {
 
         return new ResponseEntity<>(
                 DetailedResponse.of(
-                        model.getId(),
+                        model.getMetaData().modelId(),
                         new ResponseDetails("Training Complete", "Matches evaluated: " + ArrayUtil.arrayJoinWith(result.value().toArray(new String[0]), ", "),
                                 List.of("Model: " + id, "maxMatchCount: " + maxMatchCount, "patch: " + patch)
                         )
@@ -126,7 +132,12 @@ public class DataModelController {
     }
 
     @GetMapping("/{id}/points")
-    public @ResponseBody ResponseEntity<DetailedResponse<Set<DataPoint>>> getPoints(@PathVariable int id, @RequestParam(required = false) String namespace){
+    public @ResponseBody ResponseEntity<DetailedResponse<Set<DataPoint>>> getPoints(
+            @PathVariable int id,
+            @RequestParam(required = false) String namespace,
+            @RequestParam(required = false) int[] pointIds,
+            @RequestParam(required = false) String[] tags
+    ){
         if(registry == null){
             return getResponseOnRegistryMissing();
         }
@@ -135,25 +146,96 @@ public class DataModelController {
             return getResponseOnModelNotFound(id);
         }
 
-        if(namespace == null || namespace.length() == 0){
+        int computedResolution = 0;
+        computedResolution += namespace == null || namespace.length() == 0 ? 0 : 1;
+        computedResolution += pointIds == null || pointIds.length == 0 ? 0 : 2;
+        computedResolution += tags == null || tags.length == 0 ? 0 : 4;
+
+        Set<DataPoint> toReturn;
+
+        switch (computedResolution) {
+            case 0 -> //neither namespace nor pointIds declared
+                toReturn = model.getAllPoints();
+            case 1 -> //namespace only
+                toReturn = model.getPointsInNamespace(namespace);
+            case 2 -> //pointIds only
+                toReturn = model.getSpecificDataPoints(pointIds);
+            case 3 -> //points in namespace of ids pointIds
+                toReturn = ArrayUtil.resize(
+                                        model.getNamespacePointMap().get(namespace),
+                                        point -> ArrayUtil.contains(pointIds, point.getId())
+                                );
+            case 4 ->
+                toReturn = model.getPointsWithAnyOf(tags);
+            case 5 -> //points in namespace x with tags x,y,z
+                toReturn = ArrayUtil.resize(
+                                        model.getPointsInNamespace(namespace),
+                                        point -> ArrayUtil.containsAnyOf(tags,point.getTags())
+                                );
+            case 6 ->  //points with ids x,y,z and tags x,y,z
+                toReturn = ArrayUtil.resize(
+                                        model.getSpecificDataPoints(pointIds),
+                                        point -> ArrayUtil.containsAnyOf(tags,point.getTags())
+                                );
+            case 7 -> { //points with ids x,y,z and tags x,y,z within namespace x
+                Set<DataPoint> withTags = model.getPointsWithTags(tags);
+                Set<DataPoint> withIds = model.getSpecificDataPoints(pointIds);
+                if(withIds.size() <= withTags.size()){
+                    toReturn = withIds.stream()
+                            .filter(point -> point.getNamespace().equals(namespace))
+                            .filter(point -> ArrayUtil.containsAnyOf(tags,point.getTags()))
+                            .collect(Collectors.toSet());
+                }else {
+                    toReturn = withTags.stream()
+                            .filter(point -> point.getNamespace().equals(namespace))
+                            .filter(point -> ArrayUtil.isAnyOf(point.getId(), pointIds))
+                            .collect(Collectors.toSet());
+                }
+            }
+            default -> {
+                return new ResponseEntity<>(
+                        DetailedResponse.unknownError(),
+                        HttpStatusCode.valueOf(500)
+                );
+            }
+        }
+        if(toReturn == null){
             return new ResponseEntity<>(
-                    DetailedResponse.success(
-                            model.getAllPoints()
-                    ),
-                    HttpStatusCode.valueOf(200)
+                    DetailedResponse.details(
+                            new ResponseDetails("Unknown API usage error", "Somehow, you've managed to end up here. Well done.", null)
+                    ), HttpStatusCode.valueOf(400)
             );
         }
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        model.getPointsInNamespace(namespace)
+                        toReturn
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
+
+    @GetMapping("/{id}/namespaces")
+    public @ResponseBody ResponseEntity<DetailedResponse<Set<String>>> getNamespaces(@PathVariable int id){
+        if(registry == null){
+            return getResponseOnRegistryMissing();
+        }
+
+        DataModel model = registry.retrieveModel(id);
+        if(model == null){
+            return getResponseOnModelNotFound(id);
+        }
+
+        return new ResponseEntity<>(
+                DetailedResponse.success(
+                        model.getNamespaces()
                 ), HttpStatusCode.valueOf(200)
         );
     }
 
     @GetMapping("/{id}/edges")
-    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, Set<Edge>>>> getEdgeSets(@RequestParam Integer[] points, @PathVariable int id)
-    {
+    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, Set<Edge>>>> getEdgeSets(
+            @RequestParam int[] points, @PathVariable int id
+    ){
         if(registry == null){
             return getResponseOnRegistryMissing();
         }
@@ -175,8 +257,8 @@ public class DataModelController {
             );
         }
 
-        Integer[] pointsThatDoesNotExist = new Integer[0];
-        Integer[] pointsThatDoesExist = ArrayUtil.resize(points, point -> model.getPointMap().get(point) != null);
+        int[] pointsThatDoesNotExist = new int[0];
+        int[] pointsThatDoesExist = ArrayUtil.resize(points, point -> model.getPointMap().get(point) != null);
         boolean invalidPointsIncluded = false;
         if(pointsThatDoesExist.length != points.length){
             pointsThatDoesNotExist = ArrayUtil.resize(points, point -> model.getPointMap().get(point) == null);
@@ -185,10 +267,11 @@ public class DataModelController {
 
         if(pointsThatDoesExist.length == 0){
             return new ResponseEntity<>(
-                    new DetailedResponse<>(
-                            new HashMap<>(),
+                    DetailedResponse.details(
                             new ResponseDetails(
-                                    "No Valid Points Included", "", null
+                                    "No Valid Points Included",
+                                    "Points: " + ArrayUtil.arrayJoinWith(points, ","),
+                                    null
                             )
                     ), HttpStatusCode.valueOf(400)
             );
@@ -208,6 +291,24 @@ public class DataModelController {
         return new ResponseEntity<>(
                 DetailedResponse.success(
                         model.getEdgesForPoints(pointsThatDoesExist)
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
+
+    @GetMapping("/{id}/metadata")
+    public @ResponseBody ResponseEntity<DetailedResponse<DataModel.ModelMetaData>> getModelMetadata(@PathVariable int id){
+        if(registry == null){
+            return getResponseOnRegistryMissing();
+        }
+
+        DataModel model = registry.retrieveModel(id);
+        if(model == null){
+            return getResponseOnModelNotFound(id);
+        }
+
+        return new ResponseEntity<>(
+                DetailedResponse.success(
+                        model.getMetaData()
                 ), HttpStatusCode.valueOf(200)
         );
     }

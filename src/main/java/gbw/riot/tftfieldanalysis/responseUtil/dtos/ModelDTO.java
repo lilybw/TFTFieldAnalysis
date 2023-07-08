@@ -2,27 +2,27 @@ package gbw.riot.tftfieldanalysis.responseUtil.dtos;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
+import gbw.riot.tftfieldanalysis.core.Dictionary;
 import gbw.riot.tftfieldanalysis.core.Edge;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public record ModelDTO(
-        int modelId,
-        Map<DataModel.CacheKeys, Long> cache,
-        Map<Integer, Set<Edge>> edgePointIdMap,
-        Map<String,Set<DataPoint>> namespacePointMap,
-        Set<String> namespaces,
-        Set<String> dataset
+        ModelMetaDataDTO metadata,
+        List<String> namespaces,
+        Map<Integer, Set<Edge>> pointIdEdgeSetMap,
+        Map<String,Set<DataPoint>> namespacePointMap
         ) {
+
     public static ModelDTO of(DataModel model) {
+        Dictionary<String> dictionary = model.getMetaData().dictionary();
         return new ModelDTO(
-                model.getId(),
-                model.getCachedValues(),
+                ModelMetaDataDTO.of(model),
+                dictionary.translateAll(model.getNamespaces()),
                 model.getPointEdgeMap(),
-                model.getNamespacePointMap(),
-                model.getNamespaces(),
-                model.getEvaluatedMatches()
+                dictionary.decompress(model.getNamespacePointMap())
         );
     }
 }

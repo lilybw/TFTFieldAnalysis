@@ -1,9 +1,6 @@
 package gbw.riot.tftfieldanalysis.responseUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -13,9 +10,15 @@ import static gbw.riot.tftfieldanalysis.responseUtil.IntUtil.parseOr;
 //imported from gbw TheScheduler
 public class ArrayUtil {
 
+
+
     @FunctionalInterface
     public interface BooleanFunction<T> {
         boolean eval(T o);
+    }
+    @FunctionalInterface
+    public interface GenericComparator<T,R>{
+        boolean eval(T o1, R o2);
     }
     @FunctionalInterface
     public interface VoidFunction<T> {
@@ -61,6 +64,86 @@ public class ArrayUtil {
         }
         return toReturn;
     }
+    public static <T> boolean containsAnyOf(Set<T> set1, Set<T> set2){
+        for(T element : set1){
+            if(set2.contains(element)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean containsAnyOf(String[] arr1, Set<String> arr2) {
+        for(String s : arr1){
+            if(arr2.contains(s)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public static <T> boolean containsAnyOf(T[] arr1, T[] arr2){
+        return containsAnyOf(arr1, arr2, (o1, o2) -> o1 == o2);
+    }
+    public static <T> boolean containsAnyOf(int[] arr1, Set<Integer> arr2){
+        for(int i : arr1){
+            if(arr2.contains(i)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return whether array 1 contains any one element of array 2 or not.
+     */
+    public static <T,R> boolean containsAnyOf(T[] arr1, R[] arr2, GenericComparator<T,R> comparator){
+        for(int i = 0; i < arr1.length; i++){
+            for(int j = i; j < arr2.length; j++){
+                if(comparator.eval(arr1[i],arr2[i])){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public static <T> boolean isAnyOf(T element, Collection<T> collection){
+        return collection.contains(element);
+    }
+    public static <T,R> boolean isAnyOf(R element, T[] array, GenericComparator<T,R> comparator){
+        for(T obj : array){
+            if(comparator.eval(obj,element)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isAnyOf(int i, int[] array){
+        for(int i2 : array){
+            if(i == i2){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return wether or not array 1 contains all elements of array 2. It may contain more.
+     */
+    public static <T,R> boolean containsAllOf(T[] arr1, R[] arr2, GenericComparator<T,R> comparator){
+        for(R obj : arr2){
+            boolean equivalentFound = false;
+            for(T obj2 : arr1){
+                if(comparator.eval(obj2, obj)){
+                    equivalentFound = true;
+                    break;
+                }
+            }
+            if(!equivalentFound){
+                return false;
+            }
+        }
+        return true;
+    }
 
     public static void main(String[] args) {
         System.out.println(Arrays.toString(parseIntArray(new Object[]{"1", "2"}, INTEGER_INCLUDE)));
@@ -71,6 +154,29 @@ public class ArrayUtil {
 
     public static <T> T[] resize(T[] arr, BooleanFunction<T> includeFunc){
         return filter(arr, includeFunc, obj -> {});
+    }
+    public static <T> Set<T> resize(Set<T> set, BooleanFunction<T> includeFunc){
+        Set<T> toReturn = new HashSet<>();
+        set.forEach(obj -> {
+                    if (includeFunc.eval(obj)) {
+                        toReturn.add(obj);
+                    }
+                }
+        );
+        return toReturn;
+    }
+    public static int[] resize(int[] array, BooleanFunction<Integer> includeFunc){
+        List<Integer> resized = new ArrayList<>();
+        for(int i : array){
+            if(includeFunc.eval(i)){
+                resized.add(i);
+            }
+        }
+        int[] asPrimitive = new int[resized.size()];
+        for(int i = 0; i < asPrimitive.length; i++){
+            asPrimitive[i] = resized.get(i);
+        }
+        return asPrimitive;
     }
     public static <T> T[] filter(T[] arr, BooleanFunction<T> filterFunc, VoidFunction<T> onFilterEvent){
         List<T> toReturn = new ArrayList<>();
@@ -200,6 +306,9 @@ public class ArrayUtil {
                 .toArray(String[]::new);
     }
 
+    public static List<String> fromIntArrayToStringList(int[] arr){
+        return Arrays.stream(arr).mapToObj(i -> i + "").toList();
+    }
     public static List<String> fromIntArrayToStringList(Integer[] arr){
         return Arrays.stream(arr).map(String::valueOf).toList();
     }

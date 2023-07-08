@@ -3,44 +3,32 @@ package gbw.riot.tftfieldanalysis.core;
 import java.util.*;
 
 public class DataPoint implements Comparable<DataPoint>{
-    private final String namespace;
-    private HashSet<String> tags;
+    private final int namespace;
+    private Set<Integer> tags;
     private final int id = this.hashCode();
 
-    public DataPoint(String namespaceKey, List<String> tags)
+    public DataPoint(int namespaceKey, Set<Integer> tags)
     {
         this.namespace = namespaceKey;
         this.tags = new HashSet<>(tags);
     }
 
-    public boolean has(String key){
-        return tags != null && tags.contains(key);
-    }
-
-    public boolean put(String value){
-        if(tags == null) {
-            tags = new HashSet<>();
-        }
-        return tags.add(value);
-    }
-
-    public int getCombinedHash(DataPoint pointB){
-        return Objects.hash(this, pointB);
-    }
-
-    public String getNamespace(){
+    public int getNamespace(){
         return namespace;
     }
 
-    public HashSet<String> getTags(){
+    public Set<Integer> getTags(){
         return tags;
+    }
+
+    public int getId(){
+        return id;
     }
 
     @Override
     public int compareTo(DataPoint p2) {
-        if(!this.namespace.equals(p2.getNamespace())) return -1;
-        int hashThis = Objects.hash(this.getTags());
-        int hashP2 = Objects.hash(p2.getTags());
-        return hashThis - hashP2;
+        if(this.namespace != p2.getNamespace()) return -1;
+        if(this.tags.size() != p2.getTags().size()) return -1;
+        return this.tags.equals(p2.tags) ? 0 : 1;
     }
 }

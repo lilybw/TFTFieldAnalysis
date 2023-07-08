@@ -74,9 +74,13 @@ public class DataRetrievalService {
         );
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(int maxCount, MatchParser forEachMatch){
+    public ValueErrorTouple<Set<String>,Exception> run(int maxCount, MatchParser forEachMatch, Set<String> excludedMatches){
         HashSet<String> playersParsed = new HashSet<>();
-        HashSet<String> matchesParsed = new HashSet<>();
+
+        if(excludedMatches == null){
+            return ValueErrorTouple.error(new IllegalArgumentException("Excluded match set must not be null."));
+        }
+        HashSet<String> matchesParsed = new HashSet<>(excludedMatches);
         int matchesParsedCount = 0;
         Queue<String> playersYetToParse = new LinkedBlockingQueue<>(Collections.singleton(basePlayer));
 
