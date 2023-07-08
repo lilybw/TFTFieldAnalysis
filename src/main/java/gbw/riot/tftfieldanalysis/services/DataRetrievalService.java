@@ -1,8 +1,10 @@
 package gbw.riot.tftfieldanalysis.services;
 
 import gbw.riot.tftfieldanalysis.core.MatchData;
+import gbw.riot.tftfieldanalysis.core.ValueErrorTouple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.JSONWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class DataRetrievalService {
           */
          boolean apply(MatchData data);
      }
+     @Autowired
+     private SecretsService secrets;
 
     private final RestTemplate getMatchDataTemplate, getMatchIdsTemplate;
     private final String basePlayer = "PbehKkjRrNApiTrB_Q5IH5a0EAozAHNRFdd_ObZQW1c4Pt3ZL22A-gt1kFPOaxpERXRCPSQWpy7kNQ";
@@ -33,50 +37,73 @@ public class DataRetrievalService {
         this.getMatchIdsTemplate = restTemplateBuilder.build();
     }
 
-    private HttpEntity<?> getHeaders(){
+    private ValueErrorTouple<HttpEntity<?>,Exception> getHeaders(){
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Riot-Token", "secret");
+        ValueErrorTouple<String,Exception> errVal = secrets.getByKey("X-Riot-Token");
+        headers.set("X-Riot-Token", errVal.value());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        return new HttpEntity<>("",headers);
+        return ValueErrorTouple.of(new HttpEntity<>("",headers), errVal.error());
     }
 
-    public MatchData getMatchData(String matchId) {
+    public ValueErrorTouple<MatchData,Exception> getMatchData(String matchId) {
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/"+matchId;
-        ResponseEntity<MatchData> response =  this.getMatchDataTemplate.exchange(url, HttpMethod.GET, getHeaders(), MatchData.class);
-        return response.getBody();
+        ValueErrorTouple<HttpEntity<?>,Exception> headers = getHeaders();
+        if(headers.error() != null){
+            return ValueErrorTouple.error(headers.error());
+        }
+        ResponseEntity<MatchData> response = getMatchDataTemplate.exchange(url, HttpMethod.GET, headers.value(), MatchData.class);
+        if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
+            return ValueErrorTouple.error(new Exception(response.toString()));
+        }
+        return ValueErrorTouple.value(response.getBody());
     }
 
-    public String[] getMatchIdsForPlayer(String playerPUUID){
+    public ValueErrorTouple<String[],Exception> getMatchIdsForPlayer(String playerPUUID){
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/by-puuid/"+playerPUUID+"/ids?start=0&count=20";
-        String fullUnparsed = this.getMatchIdsTemplate.exchange(url, HttpMethod.GET, getHeaders(), String.class).getBody();
-        return fullUnparsed == null ? new String[0] : JSONWrapper.parseValueArray(fullUnparsed);
+        ValueErrorTouple<HttpEntity<?>,Exception> headers = getHeaders();
+        if(headers.error() != null){
+            return ValueErrorTouple.error(headers.error());
+        }
+        ResponseEntity<String> response = getMatchIdsTemplate.exchange(url, HttpMethod.GET, headers.value(), String.class);
+        if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
+            return ValueErrorTouple.error(new Exception(response.toString()));
+        }
+        String body = response.getBody();
+        return ValueErrorTouple.value(
+                body == null ? new String[0] : JSONWrapper.parseValueArray(body)
+        );
     }
 
-    public HashSet<String> run(int maxCount, MatchParser forEachMatch){
+    public ValueErrorTouple<Set<String>,Exception> run(int maxCount, MatchParser forEachMatch){
         HashSet<String> playersParsed = new HashSet<>();
         HashSet<String> matchesParsed = new HashSet<>();
-
+        int matchesParsedCount = 0;
         Queue<String> playersYetToParse = new LinkedBlockingQueue<>(Collections.singleton(basePlayer));
 
-        int playersParsedCount = 0;
-        while(playersParsedCount < maxCount && !playersYetToParse.isEmpty()){
-
+        while(matchesParsedCount < maxCount && !playersYetToParse.isEmpty()){
             String player = playersYetToParse.poll();
             if(player == null){
                 break;
             }
 
-            String[] matchIds = getMatchIdsForPlayer(player);
-            matchIds = ArrayUtil.resizeStringArray(matchIds, match -> !matchesParsed.contains(match));
+            ValueErrorTouple<String[],Exception> matchIdsRequest = getMatchIdsForPlayer(player);
+            if(matchIdsRequest.error() != null){
+                return ValueErrorTouple.of(matchesParsed, new Exception(matchIdsRequest.error()));
+            }
+            String[] matchIds = ArrayUtil.resizeStringArray(matchIdsRequest.value(), match -> !matchesParsed.contains(match));
 
             for(String id : matchIds){
-                MatchData match = getMatchData(id);
-                boolean abort = forEachMatch.apply(match);
+                ValueErrorTouple<MatchData,Exception> matchRequest = getMatchData(id);
+                if(matchRequest.error() != null){
+                    return ValueErrorTouple.of(matchesParsed, matchRequest.error());
+                }
+                boolean abort = forEachMatch.apply(matchRequest.value());
                 matchesParsed.add(id);
-                if(abort) return matchesParsed;
+                matchesParsedCount++;
+                if(abort) return ValueErrorTouple.value(matchesParsed);
 
                 //collection difference
-                List<String> possibleNewPlayers = match.metadata().participants();
+                List<String> possibleNewPlayers = matchRequest.value().metadata().participants();
                 String[] uniqueNewPlayers = ArrayUtil.resizeStringArray(
                         possibleNewPlayers.toArray(new String[0]),
                         p -> !playersParsed.contains(p)
@@ -86,7 +113,7 @@ public class DataRetrievalService {
 
             playersParsed.add(player);
         }
-        return matchesParsed;
+        return ValueErrorTouple.value(matchesParsed);
     }
 
     //Retrieve MatchData:

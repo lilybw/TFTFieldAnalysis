@@ -1,10 +1,12 @@
 package gbw.riot.tftfieldanalysis.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
 
 public class DataModel {
+
     public enum CacheKeys {
         MAX_OCCURRENCE_VALUE(-1),
         EDGE_COUNT(0),
@@ -18,13 +20,12 @@ public class DataModel {
 
     @JsonProperty
     private final Map<Integer, Set<Edge>> edgeSetForPoint = new HashMap<>();
-    @JsonProperty
+    @JsonIgnore
     private final Map<Integer, Edge> edgeTable = new HashMap<>();
     @JsonProperty
-    private final Map<String,Set<DataPoint>> pointsNamespaceMap = new HashMap<>();
+    private final Map<String,Set<DataPoint>> namespacePointMap = new HashMap<>();
     @JsonProperty
     private final Map<CacheKeys,Long> cachedValues = getCacheMap();
-
     private static Map<CacheKeys, Long> getCacheMap() {
         Map<CacheKeys, Long> toReturn = new HashMap<>();
         for(CacheKeys key : CacheKeys.values()){
@@ -32,16 +33,18 @@ public class DataModel {
         }
         return toReturn;
     }
-
+    @JsonIgnore
     private final Set<DataPoint> allPoints = new HashSet<>();
+    @JsonIgnore
     private final Map<Integer,DataPoint> pointIdMap = new HashMap<>();
+    @JsonIgnore
     private final Set<Edge> allEdges = new HashSet<>();
-
-
+    @JsonProperty
+    private final Set<String> matchIdsEvaluated = new HashSet<>();
 
     public Set<DataPoint> getPointsInNamespace(String namespace){
-        pointsNamespaceMap.computeIfAbsent(namespace, k -> new HashSet<>());
-        return pointsNamespaceMap.get(namespace);
+        namespacePointMap.computeIfAbsent(namespace, k -> new HashSet<>());
+        return namespacePointMap.get(namespace);
     }
     public Set<DataPoint> getAllPoints(){
         return allPoints;
@@ -67,14 +70,14 @@ public class DataModel {
      * @return
      */
     public DataPoint insertPoint(String namespace, List<String> tags){
-        pointsNamespaceMap.computeIfAbsent(namespace, k -> new HashSet<>());
-        for(DataPoint point : pointsNamespaceMap.get(namespace)){
+        namespacePointMap.computeIfAbsent(namespace, k -> new HashSet<>());
+        for(DataPoint point : namespacePointMap.get(namespace)){
             if(Objects.hash(tags) - Objects.hash(point.getTags()) == 0){
                 return point;
             }
         }
         DataPoint newPoint = new DataPoint(namespace, tags);
-        pointsNamespaceMap.get(namespace).add(newPoint);
+        namespacePointMap.get(namespace).add(newPoint);
         allPoints.add(newPoint);
         pointIdMap.put(newPoint.hashCode(), newPoint);
         cachedValues.put(CacheKeys.POINT_COUNT,cachedValues.get(CacheKeys.POINT_COUNT) + 1);
@@ -103,10 +106,27 @@ public class DataModel {
     }
 
     public Set<String> getNamespaces(){
-        return pointsNamespaceMap.keySet();
+        return namespacePointMap.keySet();
     }
 
     public int getId(){
         return this.hashCode();
     }
+
+    public boolean addMatchId(String matchId){
+        return matchIdsEvaluated.add(matchId);
+    }
+    public Map<Integer, Set<Edge>> getPointEdgeMap(){
+        return edgeSetForPoint;
+    }
+    public Map<CacheKeys, Long> getCachedValues(){
+        return cachedValues;
+    }
+    public Map<String,Set<DataPoint>> getNamespacePointMap(){
+        return namespacePointMap;
+    }
+    public Set<String> getEvaluatedMatches() {
+        return matchIdsEvaluated;
+    }
+
 }

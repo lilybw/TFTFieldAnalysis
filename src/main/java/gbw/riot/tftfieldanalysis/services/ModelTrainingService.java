@@ -3,10 +3,12 @@ package gbw.riot.tftfieldanalysis.services;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.MatchData;
+import gbw.riot.tftfieldanalysis.core.ValueErrorTouple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ModelTrainingService {
@@ -19,8 +21,8 @@ public class ModelTrainingService {
         boolean eval(MatchData match);
     }
 
-    public void run(DataModel model, int maxMatchCount){
-        retrievalService.run(
+    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, int maxMatchCount){
+        return retrievalService.run(
                 maxMatchCount,
                 match -> parseMatch(match, model,
                         data -> false
@@ -28,8 +30,8 @@ public class ModelTrainingService {
         );
     }
 
-    public void run(DataModel model, int maxMatchCount, String patch){
-        retrievalService.run(
+    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, int maxMatchCount, String patch){
+        return retrievalService.run(
                 maxMatchCount,
                 match -> parseMatch(match, model,
                     data -> !data.metadata().data_version().equalsIgnoreCase(patch)
@@ -69,6 +71,7 @@ public class ModelTrainingService {
                 }
             }
         }
+        model.addMatchId(data.metadata().match_id());
 
         return false;
     }

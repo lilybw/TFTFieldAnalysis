@@ -102,6 +102,21 @@ public class ArrayUtil {
         return count;
     }
 
+    /**
+     * Not in place for each
+     * @param arr
+     * @param forEach
+     * @param <T>
+     * @return
+     */
+    public static <T> T[] forEach(T[] arr, Function<T,T> forEach){
+        T[] toReturn = Arrays.copyOf(arr, arr.length);
+        for(int i = 0; i < arr.length; i++){
+            toReturn[i] = forEach.apply(arr[i]);
+        }
+        return toReturn;
+    }
+
     public static String arrayJoin(String[] array){
         StringBuilder sb = new StringBuilder();
         for(String s : array){

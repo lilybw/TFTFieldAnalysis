@@ -88,6 +88,7 @@ public class JSONWrapper {
     }
 
     public static String[] parseValueArray(String string){
+        string = string.substring(1, string.length() - 1);
         String[] splitUncleaned = string.split(",");
         String[] cleansed = new String[splitUncleaned.length];
         for(int i = 0; i < splitUncleaned.length; i++){
