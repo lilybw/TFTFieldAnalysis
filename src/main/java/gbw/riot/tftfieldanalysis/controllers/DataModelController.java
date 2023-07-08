@@ -7,6 +7,7 @@ import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
+import gbw.riot.tftfieldanalysis.services.ModelTrainingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,30 @@ public class DataModelController {
 
     @Autowired
     private ModelRegistryService registry;
+
+    @Autowired
+    private ModelTrainingService trainer;
+
+    @PostMapping("/{id}/train")
+    public @ResponseBody ResponseEntity<DetailedResponse<Integer>> trainModel(@PathVariable int id, @RequestParam int maxMatchCount, @RequestParam String patch)
+    {
+        if(registry == null){
+            return getResponseOnRegistryMissing();
+        }
+        DataModel model = registry.retrieveModel(id);
+        if(model == null){
+            return getResponseOnModelNotFound(id);
+        }
+        trainer.run(model, maxMatchCount, patch);
+        return new ResponseEntity<>(
+                new DetailedResponse<>(
+                        model.getId(),
+                        new ResponseDetails("Training Begun", "Model id: " + id + " is now being trained.",
+                                List.of("Model: " + id, "maxMatchCount: " + maxMatchCount, "patch: " + patch)
+                        )
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
 
     @GetMapping("/{id}")
     public @ResponseBody ResponseEntity<DetailedResponse<DataModel>> getModel(@PathVariable int id)
@@ -87,7 +112,7 @@ public class DataModelController {
     }
 
     @GetMapping("/{id}/points")
-    public @ResponseBody ResponseEntity<DetailedResponse<HashSet<DataPoint>>> getPoints(@PathVariable int id, @RequestParam String namespace){
+    public @ResponseBody ResponseEntity<DetailedResponse<Set<DataPoint>>> getPoints(@PathVariable int id, @RequestParam String namespace){
         if(registry == null){
             return getResponseOnRegistryMissing();
         }
