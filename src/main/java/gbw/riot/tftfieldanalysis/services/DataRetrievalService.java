@@ -12,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Function;
 
 @Service
 public class DataRetrievalService {
@@ -74,7 +73,7 @@ public class DataRetrievalService {
         );
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(int maxCount, MatchParser forEachMatch, Set<String> excludedMatches){
+    public ValueErrorTouple<Set<String>,Exception> start(ModelTrainingService.TrainingConfiguration config, MatchParser forEachMatch, Set<String> excludedMatches){
         HashSet<String> playersParsed = new HashSet<>();
 
         if(excludedMatches == null){
@@ -84,7 +83,7 @@ public class DataRetrievalService {
         int matchesParsedCount = 0;
         Queue<String> playersYetToParse = new LinkedBlockingQueue<>(Collections.singleton(basePlayer));
 
-        while(matchesParsedCount < maxCount && !playersYetToParse.isEmpty()){
+        while(matchesParsedCount < config.maxMatchCount && !playersYetToParse.isEmpty()){
             String player = playersYetToParse.poll();
             if(player == null){
                 break;

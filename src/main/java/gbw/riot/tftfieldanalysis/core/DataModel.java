@@ -66,9 +66,14 @@ public class DataModel {
     private final ModelMetaData metadata = ModelMetaData.create(this.hashCode());
 
     public Set<DataPoint> getPointsInNamespace(String namespace){
-        namespacePointMap.computeIfAbsent(namespace, k -> new HashSet<>());
-        return namespacePointMap.get(namespace);
+        int translatedNamespace = metadata.dictionary().reverseTranslate(namespace);
+        namespacePointMap.computeIfAbsent(translatedNamespace, k -> new HashSet<>());
+        return namespacePointMap.get(translatedNamespace);
     }
+    public Map<Integer,Set<DataPoint>> getNamespacePointMap(){
+        return namespacePointMap;
+    }
+
     public Set<DataPoint> getAllPoints(){
         return allPoints;
     }
@@ -212,7 +217,5 @@ public class DataModel {
     public Map<Integer, Set<Edge>> getPointEdgeMap(){
         return pointEdgesMap;
     }
-    public Map<Integer,Set<DataPoint>> getNamespacePointMap(){
-        return namespacePointMap;
-    }
+
 }

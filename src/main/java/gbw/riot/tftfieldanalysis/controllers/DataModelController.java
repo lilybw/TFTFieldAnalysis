@@ -2,12 +2,16 @@ package gbw.riot.tftfieldanalysis.controllers;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
+import gbw.riot.tftfieldanalysis.core.Dictionary;
 import gbw.riot.tftfieldanalysis.core.Edge;
 import gbw.riot.tftfieldanalysis.core.ValueErrorTouple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.DataPointDTO;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.EdgeDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelDTO;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelMetaDataDTO;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelTrainingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +33,11 @@ public class DataModelController {
     private ModelTrainingService trainer;
 
     @PostMapping("/{id}/train")
-    public @ResponseBody ResponseEntity<DetailedResponse<Integer>> trainModel(@PathVariable int id, @RequestParam int maxMatchCount, @RequestParam(required = false) String patch)
-    {
+    public @ResponseBody ResponseEntity<DetailedResponse<Integer>> trainModel(
+            @PathVariable int id,
+            @RequestParam(required = false) String puuid,
+            @RequestBody(required = false) ModelTrainingService.TrainingConfiguration config
+    ) {
         if(registry == null){
             return getResponseOnRegistryMissing();
         }
@@ -38,12 +45,8 @@ public class DataModelController {
         if(model == null){
             return getResponseOnModelNotFound(id);
         }
-        ValueErrorTouple<Set<String>,Exception> result;
-        if(patch == null){
-            result = trainer.run(model, maxMatchCount);
-        }else{
-            result = trainer.run(model, maxMatchCount, patch);
-        }
+        ValueErrorTouple<Set<String>,Exception> result = trainer.run(model, puuid, config);
+
 
         if(result.error() != null){
             return new ResponseEntity<>(
@@ -52,7 +55,9 @@ public class DataModelController {
                             new ResponseDetails(
                                     "Issue Encountered While Training",
                                     result.error().getMessage(),
-                                    List.of("Matches evaluated: " + ArrayUtil.arrayJoinWith(result.value().toArray(new String[0]), ", "))
+                                    List.of("Matches evaluated: " +
+                                            ArrayUtil.arrayJoinWith(result.value().toArray(new String[0]), ", ")
+                                    )
                             )
                     ), HttpStatusCode.valueOf(500)
             );
@@ -62,7 +67,7 @@ public class DataModelController {
                 DetailedResponse.of(
                         model.getMetaData().modelId(),
                         new ResponseDetails("Training Complete", "Matches evaluated: " + ArrayUtil.arrayJoinWith(result.value().toArray(new String[0]), ", "),
-                                List.of("Model: " + id, "maxMatchCount: " + maxMatchCount, "patch: " + patch)
+                                List.of("Model: " + id, "maxMatchCount: " + config.maxMatchCount, "patch: " + config.patch)
                         )
                 ), HttpStatusCode.valueOf(200)
         );
@@ -132,7 +137,7 @@ public class DataModelController {
     }
 
     @GetMapping("/{id}/points")
-    public @ResponseBody ResponseEntity<DetailedResponse<Set<DataPoint>>> getPoints(
+    public @ResponseBody ResponseEntity<DetailedResponse<Set<DataPointDTO>>> getPoints(
             @PathVariable int id,
             @RequestParam(required = false) String namespace,
             @RequestParam(required = false) int[] pointIds,
@@ -151,6 +156,10 @@ public class DataModelController {
         computedResolution += pointIds == null || pointIds.length == 0 ? 0 : 2;
         computedResolution += tags == null || tags.length == 0 ? 0 : 4;
 
+        Dictionary<String> dictionary = model.getMetaData().dictionary();
+        int translatedNamespace = dictionary.reverseTranslate(namespace);
+        int[] translatedTags;
+
         Set<DataPoint> toReturn;
 
         switch (computedResolution) {
@@ -162,32 +171,38 @@ public class DataModelController {
                 toReturn = model.getSpecificDataPoints(pointIds);
             case 3 -> //points in namespace of ids pointIds
                 toReturn = ArrayUtil.resize(
-                                        model.getNamespacePointMap().get(namespace),
+                                        model.getPointsInNamespace(namespace),
                                         point -> ArrayUtil.contains(pointIds, point.getId())
                                 );
-            case 4 ->
+            case 4 -> {
                 toReturn = model.getPointsWithAnyOf(tags);
-            case 5 -> //points in namespace x with tags x,y,z
+            }
+            case 5 -> {//points in namespace x with tags x,y,z
+                translatedTags = dictionary.reverseTranslateAll(tags);
                 toReturn = ArrayUtil.resize(
-                                        model.getPointsInNamespace(namespace),
-                                        point -> ArrayUtil.containsAnyOf(tags,point.getTags())
-                                );
-            case 6 ->  //points with ids x,y,z and tags x,y,z
+                        model.getPointsInNamespace(namespace),
+                        point -> ArrayUtil.containsAnyOf(translatedTags, point.getTags())
+                );
+            }
+            case 6 -> {  //points with ids x,y,z and tags x,y,z
+                translatedTags = dictionary.reverseTranslateAll(tags);
                 toReturn = ArrayUtil.resize(
-                                        model.getSpecificDataPoints(pointIds),
-                                        point -> ArrayUtil.containsAnyOf(tags,point.getTags())
-                                );
+                        model.getSpecificDataPoints(pointIds),
+                        point -> ArrayUtil.containsAnyOf(translatedTags, point.getTags())
+                );
+            }
             case 7 -> { //points with ids x,y,z and tags x,y,z within namespace x
                 Set<DataPoint> withTags = model.getPointsWithTags(tags);
                 Set<DataPoint> withIds = model.getSpecificDataPoints(pointIds);
+                translatedTags = dictionary.reverseTranslateAll(tags);
                 if(withIds.size() <= withTags.size()){
                     toReturn = withIds.stream()
-                            .filter(point -> point.getNamespace().equals(namespace))
-                            .filter(point -> ArrayUtil.containsAnyOf(tags,point.getTags()))
+                            .filter(point -> point.getNamespace() == translatedNamespace)
+                            .filter(point -> ArrayUtil.containsAnyOf(translatedTags,point.getTags()))
                             .collect(Collectors.toSet());
                 }else {
                     toReturn = withTags.stream()
-                            .filter(point -> point.getNamespace().equals(namespace))
+                            .filter(point -> point.getNamespace() == translatedNamespace)
                             .filter(point -> ArrayUtil.isAnyOf(point.getId(), pointIds))
                             .collect(Collectors.toSet());
                 }
@@ -209,13 +224,13 @@ public class DataModelController {
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        toReturn
+                        DataPointDTO.of(toReturn,model)
                 ), HttpStatusCode.valueOf(200)
         );
     }
 
     @GetMapping("/{id}/namespaces")
-    public @ResponseBody ResponseEntity<DetailedResponse<Set<String>>> getNamespaces(@PathVariable int id){
+    public @ResponseBody ResponseEntity<DetailedResponse<List<String>>> getNamespaces(@PathVariable int id){
         if(registry == null){
             return getResponseOnRegistryMissing();
         }
@@ -227,13 +242,13 @@ public class DataModelController {
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        model.getNamespaces()
+                        model.getMetaData().dictionary().translateAll(model.getNamespaces())
                 ), HttpStatusCode.valueOf(200)
         );
     }
 
     @GetMapping("/{id}/edges")
-    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, Set<Edge>>>> getEdgeSets(
+    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, Set<EdgeDTO>>>> getEdgeSets(
             @RequestParam int[] points, @PathVariable int id
     ){
         if(registry == null){
@@ -280,7 +295,7 @@ public class DataModelController {
         if(invalidPointsIncluded){
             return new ResponseEntity<>(
                     new DetailedResponse<>(
-                            model.getEdgesForPoints(pointsThatDoesExist),
+                            EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist)),
                             new ResponseDetails(
                                     "Partial Success", "Some points did not exist in model", ArrayUtil.fromIntArrayToStringList(pointsThatDoesNotExist)
                             )
@@ -290,13 +305,13 @@ public class DataModelController {
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        model.getEdgesForPoints(pointsThatDoesExist)
+                        EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist))
                 ), HttpStatusCode.valueOf(200)
         );
     }
 
     @GetMapping("/{id}/metadata")
-    public @ResponseBody ResponseEntity<DetailedResponse<DataModel.ModelMetaData>> getModelMetadata(@PathVariable int id){
+    public @ResponseBody ResponseEntity<DetailedResponse<ModelMetaDataDTO>> getModelMetadata(@PathVariable int id){
         if(registry == null){
             return getResponseOnRegistryMissing();
         }
@@ -308,7 +323,7 @@ public class DataModelController {
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        model.getMetaData()
+                        ModelMetaDataDTO.of(model)
                 ), HttpStatusCode.valueOf(200)
         );
     }

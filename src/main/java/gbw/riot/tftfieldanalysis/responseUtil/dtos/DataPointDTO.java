@@ -4,7 +4,7 @@ import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.Dictionary;
 
-import java.util.List;
+import java.util.*;
 
 public record DataPointDTO(int id, String namespace, List<String> tags) {
     public static DataPointDTO of(DataPoint point, DataModel model){
@@ -15,4 +15,22 @@ public record DataPointDTO(int id, String namespace, List<String> tags) {
                 dictionary.translateAll(point.getTags())
         );
     }
+    public static Set<DataPointDTO> of(Set<DataPoint> set, DataModel model){
+        Set<DataPointDTO> toReturn = new HashSet<>();
+        for(DataPoint p : set){
+            toReturn.add(of(p,model));
+        }
+        return toReturn;
+    }
+    public static <T> Map<T, Set<DataPointDTO>> of(Map<T, Set<DataPoint>> map, DataModel model){
+        Map<T,Set<DataPointDTO>> toReturn = new HashMap<>();
+        for(T key : map.keySet()){
+            toReturn.put(
+                    key,
+                    of(map.get(key),model)
+                    );
+        }
+        return toReturn;
+    }
+
 }

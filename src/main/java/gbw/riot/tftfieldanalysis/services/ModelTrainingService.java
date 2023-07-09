@@ -8,51 +8,72 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 @Service
 public class ModelTrainingService {
-
-    @Autowired
-    private DataRetrievalService retrievalService;
-
     @FunctionalInterface
     public interface ExcludeMatchFunction {
         boolean eval(MatchData match);
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, int maxMatchCount){
-        return run(
-                model,
-                maxMatchCount,
-                data -> false
-        );
+    public static class TrainingConfiguration{
+        public int maxMatchCount = 10;
+        public String patch = null;
+        public boolean confineToBasePlayer = false;
+        public TrainingConfiguration(){}
+        public TrainingConfiguration(int maxMatchCount){
+            this.maxMatchCount = maxMatchCount;
+        }
+        public TrainingConfiguration(String patch){
+            this.patch = patch;
+        }
+        public TrainingConfiguration(int maxMatchCount, String patch){
+            this.patch = patch;
+            this.maxMatchCount = maxMatchCount == 0 ? 10 : maxMatchCount;
+        }
+        public TrainingConfiguration(int maxMatchCount, String patch, boolean confineToBasePlayer){
+            this.patch = patch;
+            this.maxMatchCount = maxMatchCount == 0 ? 10 : maxMatchCount;
+            this.confineToBasePlayer = confineToBasePlayer;
+        }
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, int maxMatchCount, String patch){
+    @Autowired
+    private DataRetrievalService retrievalService;
+
+    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config){
+        if(config.patch == null){
+            return run(
+                    model,
+                    puuid,
+                    config,
+                    data -> false
+            );
+        }
         return run(
                 model,
-                maxMatchCount,
-                data -> !data.metadata().data_version().equalsIgnoreCase(patch)
+                puuid,
+                config,
+                data -> !data.metadata().data_version().equalsIgnoreCase(config.patch)
             );
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, int maxMatchCount, ExcludeMatchFunction excludeFunc){
+    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config, ExcludeMatchFunction excludeFunc){
         return run(
                 model,
-                maxMatchCount,
+                config,
+                puuid,
                 excludeFunc,
                 Set.of()
         );
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, int maxMatchCount, ExcludeMatchFunction excludeFunc,  Set<String> excludedMatches){
+    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, TrainingConfiguration config, String puuid, ExcludeMatchFunction excludeFunc,  Set<String> excludedMatches){
         long timeA = System.currentTimeMillis();
         LocalDateTime dateStart = LocalDateTime.now();
-        ValueErrorTouple<Set<String>,Exception> result = retrievalService.run(
-                maxMatchCount,
+        ValueErrorTouple<Set<String>,Exception> result = retrievalService.start(
+                config,
                 match -> parseMatch(match, model, excludeFunc),
                 excludedMatches
         );
@@ -95,7 +116,11 @@ public class ModelTrainingService {
                 }
             }
         }
-        model.getMetaData().matchIdsEvaluated().add(data.metadata().match_id());
+        model.getMetaData().matchIdsEvaluated().add(
+                model.getMetaData().dictionary().insert(
+                        data.metadata().match_id()
+                )
+        );
 
         return false;
     }
