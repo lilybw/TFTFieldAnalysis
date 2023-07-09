@@ -3,7 +3,8 @@ package gbw.riot.tftfieldanalysis.services;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.MatchData;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTouple;
+import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +19,27 @@ public class ModelTrainingService {
     }
 
     public static class TrainingConfiguration{
+
+        public enum ServerTargets{
+            EUROPE("europe"), AMERICAS("america"), ASIA("asia"), SEA("sea"), ERR_UNKNOWN("unknown");
+            public final String target;
+            ServerTargets(String target){
+                this.target = target;
+            }
+            public static ServerTargets of(String string){
+                for(ServerTargets target : ServerTargets.values()){
+                    if(target.target.equalsIgnoreCase(string)){
+                        return target;
+                    }
+                }
+                return ServerTargets.ERR_UNKNOWN;
+            }
+        }
+
         public int maxMatchCount = 10;
         public String patch = null;
         public boolean confineToBasePlayer = false;
+        public ServerTargets serverTarget = ServerTargets.EUROPE;
         public TrainingConfiguration(){}
         public TrainingConfiguration(int maxMatchCount){
             this.maxMatchCount = maxMatchCount;
@@ -37,12 +56,18 @@ public class ModelTrainingService {
             this.maxMatchCount = maxMatchCount == 0 ? 10 : maxMatchCount;
             this.confineToBasePlayer = confineToBasePlayer;
         }
+        public TrainingConfiguration(int maxMatchCount, String patch, boolean confineToBasePlayer, String serverTarget){
+            this.patch = patch;
+            this.maxMatchCount = maxMatchCount == 0 ? 10 : maxMatchCount;
+            this.confineToBasePlayer = confineToBasePlayer;
+            this.serverTarget = ServerTargets.of(serverTarget);
+        }
     }
 
     @Autowired
     private DataRetrievalService retrievalService;
 
-    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config){
+    public ValueErrorTuple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config){
         if(config.patch == null){
             return run(
                     model,
@@ -59,7 +84,7 @@ public class ModelTrainingService {
             );
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config, ExcludeMatchFunction excludeFunc){
+    public ValueErrorTuple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config, ExcludeMatchFunction excludeFunc){
         return run(
                 model,
                 config,
@@ -69,11 +94,17 @@ public class ModelTrainingService {
         );
     }
 
-    public ValueErrorTouple<Set<String>,Exception> run(DataModel model, TrainingConfiguration config, String puuid, ExcludeMatchFunction excludeFunc,  Set<String> excludedMatches){
+    public ValueErrorTuple<Set<String>,Exception> run(DataModel model, TrainingConfiguration config, String puuid, ExcludeMatchFunction excludeFunc, Set<String> excludedMatches){
+        Exception configError = verifyConfig(config);
+        if(configError != null){
+            return ValueErrorTuple.error(configError);
+        }
+
         long timeA = System.currentTimeMillis();
         LocalDateTime dateStart = LocalDateTime.now();
-        ValueErrorTouple<Set<String>,Exception> result = retrievalService.start(
+        ValueErrorTuple<Set<String>,Exception> result = retrievalService.start(
                 config,
+                puuid,
                 match -> parseMatch(match, model, excludeFunc),
                 excludedMatches
         );
@@ -82,6 +113,17 @@ public class ModelTrainingService {
         );
         return result;
     }
+
+    private Exception verifyConfig(TrainingConfiguration config) {
+        if(config == null){
+            return new Exception("Missing config, a config can be empty, but must be included");
+        }
+        if(config.serverTarget == TrainingConfiguration.ServerTargets.ERR_UNKNOWN){
+            return new Exception("Invalid server target. Valid ones are: "  + ArrayUtil.arrayJoinWith(TrainingConfiguration.ServerTargets.values(), ","));
+        }
+        return null;
+    }
+
     private static final String[] defaultNoTrack = new String[]{"player","item"};
 
     private boolean parseMatch(MatchData data, DataModel model, ExcludeMatchFunction excludeFunc){

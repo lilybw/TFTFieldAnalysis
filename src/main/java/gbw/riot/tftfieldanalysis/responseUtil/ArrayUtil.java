@@ -263,6 +263,22 @@ public class ArrayUtil {
         return sb.toString();
     }
     /**
+     * Joins each index, regardless of content, with the given joint so that
+     * for given joint "," array [a][b][c] becomes "a,b,c"
+     * @param array
+     * @param joint
+     * @return the array as a string joined with the given joint
+     */
+    public static String arrayJoinWith(Object[] array, String joint){
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < array.length -1; i++){
+            sb.append(array[i]).append(joint);
+        }
+        if(array.length > 0)
+            sb.append(array[array.length-1]);
+        return sb.toString();
+    }
+    /**
      * Joins each index, regardless of content, with the givent joint so that
      * for given joint "," array [a][b][c] becomes "a,b,c"
      * @param array

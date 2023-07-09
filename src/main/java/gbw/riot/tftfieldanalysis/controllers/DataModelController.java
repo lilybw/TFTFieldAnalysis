@@ -3,8 +3,6 @@ package gbw.riot.tftfieldanalysis.controllers;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.Dictionary;
-import gbw.riot.tftfieldanalysis.core.Edge;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTouple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
@@ -12,8 +10,8 @@ import gbw.riot.tftfieldanalysis.responseUtil.dtos.DataPointDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.EdgeDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelMetaDataDTO;
+import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
-import gbw.riot.tftfieldanalysis.services.ModelTrainingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -30,59 +28,18 @@ public class DataModelController {
     private ModelRegistryService registry;
 
     @Autowired
-    private ModelTrainingService trainer;
-
-    @PostMapping("/{id}/train")
-    public @ResponseBody ResponseEntity<DetailedResponse<Integer>> trainModel(
-            @PathVariable int id,
-            @RequestParam(required = false) String puuid,
-            @RequestBody(required = false) ModelTrainingService.TrainingConfiguration config
-    ) {
-        if(registry == null){
-            return getResponseOnRegistryMissing();
-        }
-        DataModel model = registry.retrieveModel(id);
-        if(model == null){
-            return getResponseOnModelNotFound(id);
-        }
-        ValueErrorTouple<Set<String>,Exception> result = trainer.run(model, puuid, config);
-
-
-        if(result.error() != null){
-            return new ResponseEntity<>(
-                    DetailedResponse.of(
-                            model.getMetaData().modelId(),
-                            new ResponseDetails(
-                                    "Issue Encountered While Training",
-                                    result.error().getMessage(),
-                                    List.of("Matches evaluated: " +
-                                            ArrayUtil.arrayJoinWith(result.value().toArray(new String[0]), ", ")
-                                    )
-                            )
-                    ), HttpStatusCode.valueOf(500)
-            );
-        }
-
-        return new ResponseEntity<>(
-                DetailedResponse.of(
-                        model.getMetaData().modelId(),
-                        new ResponseDetails("Training Complete", "Matches evaluated: " + ArrayUtil.arrayJoinWith(result.value().toArray(new String[0]), ", "),
-                                List.of("Model: " + id, "maxMatchCount: " + config.maxMatchCount, "patch: " + config.patch)
-                        )
-                ), HttpStatusCode.valueOf(200)
-        );
-    }
+    private DefaultResponseRegistryService responses;
 
     @GetMapping("/{id}")
     public @ResponseBody ResponseEntity<DetailedResponse<ModelDTO>> getModel(@PathVariable int id)
     {
         if(registry == null){
-            return getResponseOnRegistryMissing();
+            return responses.getResponseOnRegistryMissing();
         }
 
         DataModel modelFound = registry.retrieveModel(id);
         if(modelFound == null){
-            return getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(id);
         }
 
         return new ResponseEntity<>(
@@ -96,7 +53,7 @@ public class DataModelController {
     public @ResponseBody ResponseEntity<DetailedResponse<Set<Integer>>> getAllModelIds()
     {
         if(registry == null){
-            return getResponseOnRegistryMissing();
+            return responses.getResponseOnRegistryMissing();
         }
 
         return new ResponseEntity<>(
@@ -123,7 +80,7 @@ public class DataModelController {
     @PostMapping("/{id}/delete")
     public @ResponseBody ResponseEntity<DetailedResponse<String>> deleteModel(@PathVariable int id){
         if(registry == null) {
-            return getResponseOnRegistryMissing();
+            return responses.getResponseOnRegistryMissing();
         }
         if(registry.deleteModel(id)){
             return new ResponseEntity<>(
@@ -133,7 +90,7 @@ public class DataModelController {
                     ), HttpStatusCode.valueOf(200)
             );
         }
-        return getResponseOnModelNotFound(id);
+        return responses.getResponseOnModelNotFound(id);
     }
 
     @GetMapping("/{id}/points")
@@ -144,11 +101,11 @@ public class DataModelController {
             @RequestParam(required = false) String[] tags
     ){
         if(registry == null){
-            return getResponseOnRegistryMissing();
+            return responses.getResponseOnRegistryMissing();
         }
         DataModel model = registry.retrieveModel(id);
         if(model == null){
-            return getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(id);
         }
 
         int computedResolution = 0;
@@ -232,12 +189,12 @@ public class DataModelController {
     @GetMapping("/{id}/namespaces")
     public @ResponseBody ResponseEntity<DetailedResponse<List<String>>> getNamespaces(@PathVariable int id){
         if(registry == null){
-            return getResponseOnRegistryMissing();
+            return responses.getResponseOnRegistryMissing();
         }
 
         DataModel model = registry.retrieveModel(id);
         if(model == null){
-            return getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(id);
         }
 
         return new ResponseEntity<>(
@@ -252,12 +209,12 @@ public class DataModelController {
             @RequestParam int[] points, @PathVariable int id
     ){
         if(registry == null){
-            return getResponseOnRegistryMissing();
+            return responses.getResponseOnRegistryMissing();
         }
 
         DataModel model = registry.retrieveModel(id);
         if(model == null){
-            return getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(id);
         }
 
         if(points == null || points.length == 0){
@@ -313,36 +270,18 @@ public class DataModelController {
     @GetMapping("/{id}/metadata")
     public @ResponseBody ResponseEntity<DetailedResponse<ModelMetaDataDTO>> getModelMetadata(@PathVariable int id){
         if(registry == null){
-            return getResponseOnRegistryMissing();
+            return responses.getResponseOnRegistryMissing();
         }
 
         DataModel model = registry.retrieveModel(id);
         if(model == null){
-            return getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(id);
         }
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
                         ModelMetaDataDTO.of(model)
                 ), HttpStatusCode.valueOf(200)
-        );
-    }
-
-    private <T> ResponseEntity<DetailedResponse<T>> getResponseOnModelNotFound(int id){
-        return new ResponseEntity<>(
-                DetailedResponse.details(
-                        new ResponseDetails("No Such Model", "No model with id: " + id + " exists", null)
-                ),
-                HttpStatusCode.valueOf(404)
-        );
-    }
-
-    private <T> ResponseEntity<DetailedResponse<T>> getResponseOnRegistryMissing(){
-        return new ResponseEntity<>(
-                DetailedResponse.details(
-                    new ResponseDetails("Service Unavailable", "The internal model registry service is unavailable.", null)
-                ),
-                HttpStatusCode.valueOf(500)
         );
     }
 

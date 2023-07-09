@@ -1,6 +1,6 @@
 package gbw.riot.tftfieldanalysis.services;
 
-import gbw.riot.tftfieldanalysis.core.ValueErrorTouple;
+import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,7 @@ public class SecretsService {
         }
     }
 
-    public ValueErrorTouple<String,Exception> getByKey(String key){
+    public ValueErrorTuple<String,Exception> getByKey(String key){
         try{
             BufferedReader br = new BufferedReader(new FileReader(root + "/secrets.txt"));
             String line;
@@ -32,16 +32,16 @@ public class SecretsService {
                 split = ArrayUtil.forEach(split, String::trim);
                 split = ArrayUtil.resizeStringArray(split, s -> !s.isEmpty());
                 if(split.length < 2){
-                    return ValueErrorTouple.error(new Exception("Incorrect k:v declaration for key: " + key));
+                    return ValueErrorTuple.error(new Exception("Incorrect k:v declaration for key: " + key));
                 }
                 if(split[0].equals(key)){
-                    return ValueErrorTouple.value(split[1]);
+                    return ValueErrorTuple.value(split[1]);
                 }
             }
         }catch (IOException e){
-            return ValueErrorTouple.error(e);
+            return ValueErrorTuple.error(e);
         }
-        return ValueErrorTouple.error(new Exception("No Such Key"));
+        return ValueErrorTuple.error(new Exception("No Such Key"));
     }
 
 }

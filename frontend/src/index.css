@@ -1,0 +1,231 @@
+@font-face {
+  font-family: 'Beaufort';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/BeaufortforLOL-Medium.ttf") format('ttf');
+}
+
+@font-face {
+  font-family: 'Beaufort';
+  font-style: bold;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/BeaufortforLOL-Heavy.ttf") format('ttf');
+}
+
+@font-face {
+  font-family: 'Spiegel';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/Spiegel_TT_Regular.ttf") format('ttf');
+}
+
+@font-face {
+  font-family: 'Spiegel';
+  font-style: bold;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/Spiegel_TT_Bold.ttf") format('ttf');
+}
+
+:root {
+  font-family: 'Spiegel', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+
+  /* https: //brand.riotgames.com/en-us/league-of-legends/color */
+  --blue-1: #CDFAFA;
+  --blue-2: #0AC8B9;
+  --blue-3: #0397AB;
+  --blue-4: #005A82;
+  --blue-5: #0A323C;
+  --blue-6: #091428;
+  --blue-7: #0A1428;
+
+  --gold-1: #F0E6D2;
+  --gold-2: #C8AA6E;
+  --gold-3: #C89B3C;
+  --gold-4: #785A28;
+  --gold-5: #463714;
+  --gold-6: #32281E;
+
+  --grey-1: #A09B8C;
+  --grey-2: #5B5A56;
+  --grey-3: #3C3C41;
+  --grey-4: #2A2A2E;
+  --grey-5: #1E2328;
+  --grey-6: #010A13;
+
+  --red-1: #ff5252;
+  /*not style guide specified*/
+  --red-2: #ff0000;
+  --red-3: #900000;
+
+  --bg-color-1: var(--blue-6);
+
+  --border-gradient-1: var(--gold-5);
+  --border-gradient-2: var(--gold-4);
+  --border-gradient-3: var(--gold-5);
+  --metal-gradient: linear-gradient(45deg, var(--gold-3), var(--gold-4));
+  --radiant-gradient: linear-gradient(45deg, var(--blue-4), var(--blue-2), var(--blue-5));
+  --radiant-gradient2: linear-gradient(45deg, var(--blue-2), var(--blue-5), var(--blue-3));
+
+  background-color: var(--bg-color-1);
+  color: var(--gold-1);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  overflow: clip;
+}
+
+input {
+  padding: 5%;
+  border: 2px solid var(--gold-4);
+  background-color: rgba(0, 0, 0, 0.5);
+  height: var(--circle-height);
+  transition: all 0.5s;
+  text-align: center;
+  font-size: 100%;
+}
+
+input::placeholder {
+  color: white;
+  font-size: 100%;
+  text-align: center;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--gold-3);
+  filter: drop-shadow(0 0 0.1rem black);
+}
+
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.hidden {
+  display: none;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-family: 'Beaufort', sans-serif;
+  color: var(--gold-2);
+  font-weight: medium;
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+p {
+  color: var(--gold-1);
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  color: var(--gold-1);
+}
+
+button {
+  border-radius: 100%;
+  border: 1px solid transparent;
+  padding: 0;
+  margin: 0;
+  aspect-ratio: 1 / 1;
+  color: var(--gold-1);
+  background-color: var(--blue-6);
+  border: 2px solid var(--gold-3);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+button:hover {
+  filter: drop-shadow(0 0 0.5rem white);
+}
+
+button:focus,
+button:focus-visible {
+  outline: none;
+}
+
+img {
+  object-fit: cover;
+}
+
+/* Define the style of the scrollbar */
+::-webkit-scrollbar {
+  width: 1rem;
+  /* Set the width of the scrollbar */
+  border-radius: 1rem;
+  /* Set the border radius of the scrollbar */
+  margin: .5rem;
+}
+
+/* Define the track of the scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent;
+  /* Set the color of the scrollbar track */
+  border-radius: 1rem;
+  /* Set the border radius of the scrollbar track */
+  border: 2px solid var(--gold-3);
+}
+
+/* Define the thumb of the scrollbar */
+::-webkit-scrollbar-thumb {
+  background: var(--gold-3);
+  /* Set the color of the scrollbar thumb */
+  border-radius: 1rem;
+  /* Set the border radius of the scrollbar thumb */
+  height: 5rem;
+}
+
+/* Define the hover effect of the scrollbar thumb */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--blue-4);
+  /* Set the color of the scrollbar thumb on hover */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}

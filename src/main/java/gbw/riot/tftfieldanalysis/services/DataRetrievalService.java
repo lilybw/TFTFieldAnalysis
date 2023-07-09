@@ -1,7 +1,7 @@
 package gbw.riot.tftfieldanalysis.services;
 
 import gbw.riot.tftfieldanalysis.core.MatchData;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTouple;
+import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.JSONWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,59 +29,63 @@ public class DataRetrievalService {
      private SecretsService secrets;
 
     private final RestTemplate getMatchDataTemplate, getMatchIdsTemplate;
-    private final String basePlayer = "PbehKkjRrNApiTrB_Q5IH5a0EAozAHNRFdd_ObZQW1c4Pt3ZL22A-gt1kFPOaxpERXRCPSQWpy7kNQ";
 
     public DataRetrievalService(RestTemplateBuilder restTemplateBuilder) {
         this.getMatchDataTemplate = restTemplateBuilder.build();
         this.getMatchIdsTemplate = restTemplateBuilder.build();
     }
 
-    private ValueErrorTouple<HttpEntity<?>,Exception> getHeaders(){
+    private ValueErrorTuple<HttpEntity<?>,Exception> getHeaders(){
         HttpHeaders headers = new HttpHeaders();
-        ValueErrorTouple<String,Exception> errVal = secrets.getByKey("X-Riot-Token");
+        ValueErrorTuple<String,Exception> errVal = secrets.getByKey("X-Riot-Token");
         headers.set("X-Riot-Token", errVal.value());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        return ValueErrorTouple.of(new HttpEntity<>("",headers), errVal.error());
+        return ValueErrorTuple.of(new HttpEntity<>("",headers), errVal.error());
     }
 
-    public ValueErrorTouple<MatchData,Exception> getMatchData(String matchId) {
+    public ValueErrorTuple<MatchData,Exception> getMatchData(String matchId) {
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/"+matchId;
-        ValueErrorTouple<HttpEntity<?>,Exception> headers = getHeaders();
+        ValueErrorTuple<HttpEntity<?>,Exception> headers = getHeaders();
         if(headers.error() != null){
-            return ValueErrorTouple.error(headers.error());
+            return ValueErrorTuple.error(headers.error());
         }
         ResponseEntity<MatchData> response = getMatchDataTemplate.exchange(url, HttpMethod.GET, headers.value(), MatchData.class);
         if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
-            return ValueErrorTouple.error(new Exception(response.toString()));
+            return ValueErrorTuple.error(new Exception(response.toString()));
         }
-        return ValueErrorTouple.value(response.getBody());
+        return ValueErrorTuple.value(response.getBody());
     }
 
-    public ValueErrorTouple<String[],Exception> getMatchIdsForPlayer(String playerPUUID){
+    public ValueErrorTuple<String[],Exception> getMatchIdsForPlayer(String playerPUUID){
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/by-puuid/"+playerPUUID+"/ids?start=0&count=20";
-        ValueErrorTouple<HttpEntity<?>,Exception> headers = getHeaders();
+        ValueErrorTuple<HttpEntity<?>,Exception> headers = getHeaders();
         if(headers.error() != null){
-            return ValueErrorTouple.error(headers.error());
+            return ValueErrorTuple.error(headers.error());
         }
         ResponseEntity<String> response = getMatchIdsTemplate.exchange(url, HttpMethod.GET, headers.value(), String.class);
         if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
-            return ValueErrorTouple.error(new Exception(response.toString()));
+            return ValueErrorTuple.error(new Exception(response.toString()));
         }
         String body = response.getBody();
-        return ValueErrorTouple.value(
+        return ValueErrorTuple.value(
                 body == null ? new String[0] : JSONWrapper.parseValueArray(body)
         );
     }
 
-    public ValueErrorTouple<Set<String>,Exception> start(ModelTrainingService.TrainingConfiguration config, MatchParser forEachMatch, Set<String> excludedMatches){
+    public ValueErrorTuple<Set<String>,Exception> start(ModelTrainingService.TrainingConfiguration config, String basePlayerPUUID, MatchParser forEachMatch, Set<String> excludedMatches){
         HashSet<String> playersParsed = new HashSet<>();
+        MatchData[] dataPool = new MatchData[config.maxMatchCount];
+        Thread[] threadPool = new Thread[config.maxMatchCount];
+        //Algorithm structure:
+        //  first, retrieve all match ids for players
+        //  second, spin out to load the data for each match id
 
         if(excludedMatches == null){
-            return ValueErrorTouple.error(new IllegalArgumentException("Excluded match set must not be null."));
+            return ValueErrorTuple.error(new IllegalArgumentException("Excluded match set must not be null."));
         }
         HashSet<String> matchesParsed = new HashSet<>(excludedMatches);
         int matchesParsedCount = 0;
-        Queue<String> playersYetToParse = new LinkedBlockingQueue<>(Collections.singleton(basePlayer));
+        Queue<String> playersYetToParse = new LinkedBlockingQueue<>(Collections.singleton(basePlayerPUUID));
 
         while(matchesParsedCount < config.maxMatchCount && !playersYetToParse.isEmpty()){
             String player = playersYetToParse.poll();
@@ -89,21 +93,21 @@ public class DataRetrievalService {
                 break;
             }
 
-            ValueErrorTouple<String[],Exception> matchIdsRequest = getMatchIdsForPlayer(player);
+            ValueErrorTuple<String[],Exception> matchIdsRequest = getMatchIdsForPlayer(player);
             if(matchIdsRequest.error() != null){
-                return ValueErrorTouple.of(matchesParsed, new Exception(matchIdsRequest.error()));
+                return ValueErrorTuple.of(matchesParsed, new Exception(matchIdsRequest.error()));
             }
             String[] matchIds = ArrayUtil.resizeStringArray(matchIdsRequest.value(), match -> !matchesParsed.contains(match));
 
             for(String id : matchIds){
-                ValueErrorTouple<MatchData,Exception> matchRequest = getMatchData(id);
+                ValueErrorTuple<MatchData,Exception> matchRequest = getMatchData(id);
                 if(matchRequest.error() != null){
-                    return ValueErrorTouple.of(matchesParsed, matchRequest.error());
+                    return ValueErrorTuple.of(matchesParsed, matchRequest.error());
                 }
                 boolean abort = forEachMatch.apply(matchRequest.value());
                 matchesParsed.add(id);
                 matchesParsedCount++;
-                if(abort) return ValueErrorTouple.value(matchesParsed);
+                if(abort) return ValueErrorTuple.value(matchesParsed);
 
                 //collection difference
                 List<String> possibleNewPlayers = matchRequest.value().metadata().participants();
@@ -116,7 +120,15 @@ public class DataRetrievalService {
 
             playersParsed.add(player);
         }
-        return ValueErrorTouple.value(matchesParsed);
+
+        if(matchesParsedCount < config.maxMatchCount){
+            return ValueErrorTuple.of(
+                    matchesParsed,
+                    new RuntimeException("Unable to reach desired match count: " + matchesParsedCount + " / " + config.maxMatchCount)
+            );
+        }
+
+        return ValueErrorTuple.value(matchesParsed);
     }
 
     //Retrieve MatchData:
@@ -124,7 +136,7 @@ public class DataRetrievalService {
 
     //Retrieve match ids for player:
     // https://europe.api.riotgames.com/tft/match/v1/matches/by-puuid/<PLAYER PUUID>/ids?start=0&count=20
-
+    //my puuid: PbehKkjRrNApiTrB_Q5IH5a0EAozAHNRFdd_ObZQW1c4Pt3ZL22A-gt1kFPOaxpERXRCPSQWpy7kNQ
     /*
         Known match ids:
             "EUW1_6484922710",

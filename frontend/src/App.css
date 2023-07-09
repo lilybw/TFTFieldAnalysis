@@ -1,0 +1,46 @@
+html{
+  overflow:hidden;
+  background: linear-gradient(
+    var(--blue-7),
+    var(--blue-5),
+    var(--blue-4)
+  );
+}
+
+.App{
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}
+
+.create-model-button, .browse-model-button{
+  width: 15rem;
+  height: 7.5rem;
+  box-shadow: 0 0 2rem var(--blue-6);
+
+  border-radius: 5rem;
+  background: transparent;
+}
+.create-model-button:hover, .browse-model-button:hover{
+  text-shadow: none;
+  filter: none;
+  box-shadow: 0 0 2rem var(--gold-2);
+  border-color: var(--gold-1);
+  border-radius: 1rem;
+  transition: all 0.25s;
+}
+
+.main-options{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100vw;
+  margin-top: 2rem;
+}
+
+.main-title{
+  text-align: center;
+  width: 100vw;
+  text-shadow: 0 0 2rem var(--blue-6);
+}
