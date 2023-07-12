@@ -1,21 +1,65 @@
 import './App.css'
 import Header from './components/header/Header'
+import React from 'react';
+import Landing from './components/landing/Landing';
+import ModelBrowser from './components/modelBrowser/ModelBrowser';
+import ModelCreator from './components/modelCreator/ModelCreator';
+import ModelView from './components/modelView/ModelView';
 
 function App() {
 
+  const goBack = () => {
+    setAppBody(prevBody);
+  }
+
+  const UniversalBackOffElement = () => {
+    return (
+      <button className="previous-page-button"
+          onClick={() => goBack()}
+        >
+        <h2>&lt;-</h2>
+      </button>
+    )
+  }
+
+  const updatePrev = () => {
+    setPrevBody(appBody);
+  }
+
+  const goBrowse = () => {
+    updatePrev();
+    setAppBody(
+      <ModelBrowser backup={<UniversalBackOffElement />} goView={goView}/>
+    
+    );
+  }
+  const goCreate = () => {
+    updatePrev();
+    setAppBody(
+      <ModelCreator 
+        goView={goView}
+      />
+    );
+  }
+  const goView = (modelId: number) => {
+    updatePrev();
+    setAppBody(
+      <ModelView modelId={modelId} 
+        backup={<UniversalBackOffElement />}
+      />);
+  }
+
+  const [appBody, setAppBody] = React.useState<JSX.Element>(
+    <Landing goBrowse={goBrowse} goCreate={goCreate} />
+  )
+  const [prevBody, setPrevBody] = React.useState<JSX.Element>(
+    <Landing goBrowse={goBrowse} goCreate={goCreate} />
+  )
+
   return (
     <div className="App">
-      <Header frontendVersion="alpha 0.0.1"/>
-
-      <h1 className="main-title">Vector Model Analysis of Team Fight Tactics</h1>
-      <div className="main-options">
-        <a className="create-model-button" href="/create">
-          <h2>Create Model</h2>
-        </a>
-        <a className="browse-model-button" href="browse">
-          <h2>Browse</h2>
-        </a>
-      </div>
+      <Header  frontendVersion={"alpha 0.0.1"} />
+      {appBody}
     </div>
   )
 }

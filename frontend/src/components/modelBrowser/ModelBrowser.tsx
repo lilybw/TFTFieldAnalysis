@@ -2,12 +2,13 @@ import './ModelBrowser.css'
 import React, { useEffect, useState } from 'react'
 import { getAllModelIds } from '../../ts/backendIntegration';
 import { toList } from '../../ts/dataTypeTranslator';
-import ModelThumbnail from '../modelThumbnail/modelThumbnail';
+import ModelThumbnail from '../modelThumbnail/ModelThumbnail';
+import { Backupable, Viewer } from '../../ts/component';
 
-interface ModelBrowserProps {
+interface ModelBrowserProps extends Backupable, Viewer {
 }
 
-export default function ModelBrowser({}: ModelBrowserProps): JSX.Element{
+export default function ModelBrowser({backup, goView}: ModelBrowserProps): JSX.Element{
     const [modelList, setModelList] = useState<number[]>([]);
 
     useEffect(() => {
@@ -22,11 +23,26 @@ export default function ModelBrowser({}: ModelBrowserProps): JSX.Element{
             <div className="model-list">
                 {modelList.map((modelId) => {
                     return (
-                        <ModelThumbnail modelId={modelId} key={modelId}/>
+                        <ModelThumbnail 
+                            modelId={modelId} 
+                            key={modelId}
+                            onSelect={
+                                (modelId) => {
+                                    goView(modelId);
+                                }
+                            }
+                        />
                     )
                 })
                 }
             </div>
+
+            {
+                backup ?
+                backup
+                :
+                <></>
+            }
         </div>
     )
 }

@@ -2,10 +2,11 @@ import React from "react";
 import './ModelThumbnail.css'
 import { getModelMetadata } from "../../ts/backendIntegration";
 import { type ModelMetaDataDTO } from "../../ts/types";
+import { Backupable } from "../../ts/component";
 
-interface ModelThumbnailProps {
+interface ModelThumbnailProps extends Backupable {
     modelId: number;
-    onSelect?: (modelId: number) => {}
+    onSelect?: (modelId: number) => void;
 }
 
 export default function ModelThumbnail({modelId, onSelect}: ModelThumbnailProps): JSX.Element {
@@ -17,7 +18,7 @@ export default function ModelThumbnail({modelId, onSelect}: ModelThumbnailProps)
         if(!hover || metadata != null) return;
         getModelMetadata(modelId).then((metadata) => {
             setMetadata(metadata.response);
-        })
+        });
     }, [hover])
 
     const appendContent = () => {

@@ -12,6 +12,7 @@ export type ModelMetaDataCacheDTO = {
     MAX_OCCURRENCE_VALUE: number,
     MIN_OCCURRENCE_VALUE: number
 }
+
 export type DataPointDTO = {
     id: number;
     namespace: string;

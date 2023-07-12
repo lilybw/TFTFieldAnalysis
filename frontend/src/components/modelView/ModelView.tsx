@@ -3,12 +3,13 @@ import './ModelView.css';
 import { DataPointDTO, ModelDTO } from '../../ts/types';
 import { getModel, getNamespaces, getPoints } from '../../ts/backendIntegration';
 import { toList } from '../../ts/dataTypeTranslator';
+import { Backupable } from '../../ts/component';
 
-interface ModelViewProps{
+interface ModelViewProps extends Backupable{
     modelId: number;
 }
 
-export default function ModelView({modelId}: ModelViewProps): JSX.Element {
+export default function ModelView({modelId, backup}: ModelViewProps): JSX.Element {
     const [namespaces, setNamespaces] = React.useState<string[]>([]);
     const [selectedNamespace, setSelectedNamespace] = React.useState<string>("")
     const [selectedPointIds, setSelectedPointIds] = React.useState<number[]>([])
@@ -33,7 +34,9 @@ export default function ModelView({modelId}: ModelViewProps): JSX.Element {
         <div className="ModelView">
             <h1>Model {modelId}</h1>
 
-
+            {
+                backup ? backup : <></>
+            }
         </div>
     )
 
