@@ -68,7 +68,7 @@ public class ModelTrainingService {
     private DataRetrievalService retrievalService;
 
     public ValueErrorTuple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config){
-        if(config.patch == null){
+        if(config == null || config.patch == null){
             return run(
                     model,
                     puuid,

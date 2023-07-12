@@ -29,6 +29,17 @@ public class MdelTrainingController {
     @Autowired
     private DefaultResponseRegistryService responses;
 
+    @GetMapping("/serverTargets")
+    public @ResponseBody ResponseEntity<DetailedResponse<ModelTrainingService.TrainingConfiguration.ServerTargets[]>>
+    getValidServerTargets()
+    {
+        return new ResponseEntity<>(
+                DetailedResponse.success(
+                        ModelTrainingService.TrainingConfiguration.ServerTargets.values()
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
+
     @PostMapping("/{id}")
     public @ResponseBody
     ResponseEntity<DetailedResponse<Integer>> trainModel(

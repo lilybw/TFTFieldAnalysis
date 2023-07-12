@@ -1,7 +1,8 @@
-import 'ModelBrowser.css'
+import './ModelBrowser.css'
 import React, { useEffect, useState } from 'react'
 import { getAllModelIds } from '../../ts/backendIntegration';
 import { toList } from '../../ts/dataTypeTranslator';
+import ModelThumbnail from '../modelThumbnail/modelThumbnail';
 
 interface ModelBrowserProps {
 }
@@ -16,15 +17,12 @@ export default function ModelBrowser({}: ModelBrowserProps): JSX.Element{
     }, []);
     
     return (
-        <div className="ModelBrowser">
+        <div className="ModelBrowser center">
             <h1>Model Browser</h1>
             <div className="model-list">
-                <h2>Models</h2>
                 {modelList.map((modelId) => {
                     return (
-                        <button className="model-list-item">
-                            <h3>{modelId}</h3>
-                        </button>
+                        <ModelThumbnail modelId={modelId} key={modelId}/>
                     )
                 })
                 }

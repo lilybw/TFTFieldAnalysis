@@ -47,6 +47,14 @@ public class ArrayUtil {
     public static int[] parseIntArray(String[] arr) throws NumberFormatException, NullPointerException {
         return Stream.of(arr).mapToInt(Integer::parseInt).toArray();
     }
+
+    public static <T extends Comparable<? super T>> List<T> sort(Collection<T> c, Comparator<? super T> comparator) {
+        List<T> list = new ArrayList<T>(c);
+        list.sort(comparator);
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
     public static int[] parseIntArray(Object[] arr, BooleanFunction includeFunc){
         arr = resize(arr, includeFunc);
         int[] toReturn = new int[arr.length];

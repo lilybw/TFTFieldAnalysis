@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -49,7 +50,14 @@ public class DataRetrievalService {
         if(headers.error() != null){
             return ValueErrorTuple.error(headers.error());
         }
-        ResponseEntity<MatchData> response = getMatchDataTemplate.exchange(url, HttpMethod.GET, headers.value(), MatchData.class);
+        ValueErrorTuple<ResponseEntity<MatchData>, RestClientException>
+                requestAttempt = ValueErrorTuple.encapsulate(
+                        () -> getMatchDataTemplate.exchange(url, HttpMethod.GET, headers.value(), MatchData.class)
+        );
+        if(requestAttempt.error() != null){
+            return ValueErrorTuple.error(requestAttempt.error());
+        }
+        ResponseEntity<MatchData> response = requestAttempt.value();
         if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
             return ValueErrorTuple.error(new Exception(response.toString()));
         }
@@ -62,7 +70,15 @@ public class DataRetrievalService {
         if(headers.error() != null){
             return ValueErrorTuple.error(headers.error());
         }
-        ResponseEntity<String> response = getMatchIdsTemplate.exchange(url, HttpMethod.GET, headers.value(), String.class);
+        ValueErrorTuple<ResponseEntity<String>, RestClientException>
+                responseAttempt = ValueErrorTuple.encapsulate(
+                        () -> getMatchIdsTemplate.exchange(url, HttpMethod.GET, headers.value(), String.class)
+        );
+        if(responseAttempt.error() != null){
+            return ValueErrorTuple.error(responseAttempt.error());
+        }
+        ResponseEntity<String> response = responseAttempt.value();
+
         if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
             return ValueErrorTuple.error(new Exception(response.toString()));
         }

@@ -5,16 +5,16 @@ function App() {
 
   return (
     <div className="App">
-      <Header frontendVersion="alpha 0.0.1" backendVersion="alpha 0.0.5"/>
+      <Header frontendVersion="alpha 0.0.1"/>
 
       <h1 className="main-title">Vector Model Analysis of Team Fight Tactics</h1>
       <div className="main-options">
-        <button className="create-model-button">
+        <a className="create-model-button" href="/create">
           <h2>Create Model</h2>
-        </button>
-        <button className="browse-model-button">
+        </a>
+        <a className="browse-model-button" href="browse">
           <h2>Browse</h2>
-        </button>
+        </a>
       </div>
     </div>
   )

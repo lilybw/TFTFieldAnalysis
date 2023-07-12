@@ -35,4 +35,14 @@ public class ServiceMetadataController {
         );
     }
 
+    @GetMapping("/")
+    public @ResponseBody ResponseEntity<DetailedResponse<String>> hello()
+    {
+        return new ResponseEntity<>(
+                DetailedResponse.success(
+                        "You've reached the backend for TFTFA"
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
+
 }

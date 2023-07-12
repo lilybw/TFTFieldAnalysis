@@ -1,0 +1,46 @@
+.ModelThumbnail{
+    height: 3rem;
+    width: 90%;
+    border-radius: 1rem;
+    border-bottom: .2rem solid var(--gold-4);
+    box-shadow: 0 0 2rem var(--blue-6);
+    background: linear-gradient(
+        transparent,
+        var(--translucent-white-01)
+    );
+    text-align: left;
+    display: grid;
+    align-content: center;
+    margin: .5rem;
+    padding: 1rem;
+    color: var(--blue-2);
+    
+    transition: all 0.25s;
+}
+.horizontal-2{
+    display: flex;
+    flex-direction: row;
+    row-gap: 1rem;
+    justify-content: space-evenly;
+    color: var(--gold-2);
+}
+.mthumb-expanded{
+    min-height: 8rem;
+}
+.model-link{
+    padding: 0;
+    margin: 0;
+    font-size: 1.5rem;
+    
+}
+.mthumb-nothing{
+    height: 0;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    transition: none;
+}
+.mthumb-body{
+    color: var(--gold-3);
+
+}

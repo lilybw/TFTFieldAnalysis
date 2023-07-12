@@ -1,4 +1,14 @@
-.ModelBrowser{}
+.ModelBrowser{
+    display: grid;
+    align-items: center;
+    position: absolute;
+    text-align: center;
+    height: 80%;
+    width: 80%;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
 .model-list{
     display: grid;
     grid-template-columns: 1;

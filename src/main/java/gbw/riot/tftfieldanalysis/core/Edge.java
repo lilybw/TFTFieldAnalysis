@@ -12,4 +12,8 @@ public class Edge {
     public DataPoint pointA;
     public DataPoint pointB;
 
+    public long getValue(){
+        return value;
+    }
+
 }

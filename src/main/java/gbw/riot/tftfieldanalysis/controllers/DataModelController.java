@@ -3,6 +3,7 @@ package gbw.riot.tftfieldanalysis.controllers;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.Dictionary;
+import gbw.riot.tftfieldanalysis.core.Edge;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
@@ -205,7 +206,7 @@ public class DataModelController {
     }
 
     @GetMapping("/{id}/edges")
-    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, Set<EdgeDTO>>>> getEdgeSets(
+    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, List<EdgeDTO>>>> getEdgeSets(
             @RequestParam int[] points, @PathVariable int id
     ){
         if(registry == null){
@@ -249,10 +250,22 @@ public class DataModelController {
             );
         }
 
+        Map<Integer, Set<EdgeDTO>> edges = EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist));
+        Map<Integer, List<EdgeDTO>> sortedEdges = new HashMap<>();
+        for(int key : edges.keySet()){
+            List<EdgeDTO> asList = new ArrayList<>(edges.get(key));
+            asList.sort(Comparator.comparingLong(EdgeDTO::occurrence));
+            Collections.reverse(asList);
+            sortedEdges.put(
+                    key,
+                    asList
+            );
+        }
+
         if(invalidPointsIncluded){
             return new ResponseEntity<>(
                     new DetailedResponse<>(
-                            EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist)),
+                            sortedEdges,
                             new ResponseDetails(
                                     "Partial Success", "Some points did not exist in model", ArrayUtil.fromIntArrayToStringList(pointsThatDoesNotExist)
                             )
@@ -262,7 +275,7 @@ public class DataModelController {
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist))
+                        sortedEdges
                 ), HttpStatusCode.valueOf(200)
         );
     }

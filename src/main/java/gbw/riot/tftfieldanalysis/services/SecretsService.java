@@ -1,5 +1,7 @@
 package gbw.riot.tftfieldanalysis.services;
 
+import gbw.riot.tftfieldanalysis.core.AutoFetch;
+import gbw.riot.tftfieldanalysis.core.RequestsFile;
 import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import org.springframework.stereotype.Service;

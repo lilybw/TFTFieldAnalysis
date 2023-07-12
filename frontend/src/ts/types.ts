@@ -2,11 +2,16 @@ export type ModelMetaDataDTO = {
     modelId: number;
     matchIdsEvaluated: string[];
     dateSecondsTrainingMap: TrainingSession[];
-    cachedValues: Map<CacheKeys, number>;
+    cachedValues: ModelMetaDataCacheDTO;
     pointsPerNamespace: Map<string, number>;
     pointsWithTagCount: Map<string, number>;
 };
-
+export type ModelMetaDataCacheDTO = {
+    EDGE_COUNT: number,
+    POINT_COUNT: number, 
+    MAX_OCCURRENCE_VALUE: number,
+    MIN_OCCURRENCE_VALUE: number
+}
 export type DataPointDTO = {
     id: number;
     namespace: string;
@@ -53,12 +58,7 @@ export type ResponseDetails = {
 };
 
 
-export enum CacheKeys {
-    MAX_OCCURRENCE_VALUE = -1,
-    EDGE_COUNT = 0,
-    POINT_COUNT = 0,
-    MIN_OCCURRENCE_VALUE = 1
-}
+
 
 export type TrainingSession = {
     date: Date;

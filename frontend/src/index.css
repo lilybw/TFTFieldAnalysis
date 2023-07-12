@@ -30,6 +30,17 @@
   src: url("./assets/fonts/Spiegel_TT_Bold.ttf") format('ttf');
 }
 
+html{
+  overflow:hidden;
+  background-image: 
+    url("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/lcu-article-backdrop.jpg"), 
+    linear-gradient(var(--blue-5),var(--blue-6));
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
 :root {
   font-family: 'Spiegel', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -64,6 +75,10 @@
   /*not style guide specified*/
   --red-2: #ff0000;
   --red-3: #900000;
+
+  --translucent-white-01: rgba(255,255,255,0.05);
+  --translucent-white-02: rgba(255,255,255,0.1);
+  --translucent-white-03: rbga(255,255,255,0.25);
 
   --bg-color-1: var(--blue-6);
 
@@ -121,12 +136,14 @@ input:focus {
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--blue-3);
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: var(--blue-2);
+  text-decoration: underline;
+  text-decoration-color: var(--gold-1)
 }
 
 body {

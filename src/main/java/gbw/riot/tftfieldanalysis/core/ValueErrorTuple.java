@@ -24,7 +24,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         return new ValueErrorTuple<>(value, error);
     }
 
-    public static <T, R extends Throwable> ValueErrorTuple<T, R> from(ZeroParameterTupleRetriever<T, R> retriever) {
+    public static <T, R extends Throwable> ValueErrorTuple<T, R> encapsulate(ZeroParameterTupleRetriever<T, R> retriever) {
         T value = null;
         try {
             value = retriever.run();
@@ -33,7 +33,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         }
         return of(value, null);
     }
-    public static <T, N, R extends Throwable> ValueErrorTuple<T, R> from(OneParameterTupleRetriever<T, N, R> retriever, N value) {
+    public static <T, N, R extends Throwable> ValueErrorTuple<T, R> encapsulate(OneParameterTupleRetriever<T, N, R> retriever, N value) {
         T result = null;
         try {
             result = retriever.run(value);
