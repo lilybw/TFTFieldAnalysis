@@ -144,9 +144,9 @@ a {
 }
 
 a:hover {
-  color: var(--blue-2);
-  text-decoration: underline;
-  text-decoration-color: var(--gold-1)
+  color: var(--blue-2) !important;
+  text-decoration: none;
+  text-shadow: 0 0 .5rem var(--gold-1);
 }
 
 body {

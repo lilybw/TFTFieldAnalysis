@@ -13,6 +13,7 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
     const [puuid, setPuuid] = React.useState<string>();
     const [selectedServerTarget, setSelectedServerTarget] = React.useState<string>();
     const [confine, setConfine] = React.useState<boolean>(false);
+    const [progress, setProgress] = React.useState<number>(0);
 
     React.useEffect(() => {
         getTrainingServerTargets().then(targets => {
@@ -24,8 +25,29 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
         console.log("Submitted model")
     }
 
+    const getStep = () => {
+        switch (progress) {
+            case 0: {
+                return (
+
+                )
+            } //submit and validate ign to get puuid
+            case 1: {
+                return (
+
+                )
+            }//choose settings
+            case 2: {
+                return (
+
+                )
+            }//done
+        }
+    }
+
     return (
         <div className="ModelCreator">
+            <StepDisplay steps={3} stepNames={["IGN", "Settings", "Done!"] currentStep={progress}/>
             <h2>Step 1: Select your server</h2>
             <div className="server-target-select">
                 {possibleTargets.map((target, index) => {

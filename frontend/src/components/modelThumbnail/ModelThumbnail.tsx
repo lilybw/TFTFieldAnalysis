@@ -71,8 +71,7 @@ export default function ModelThumbnail({modelId, onSelect}: ModelThumbnailProps)
                     () => {}
                 }
             >
-            <a 
-                href={"/model/"+modelId}
+            <a
                 className="model-link"
                 >{modelId}</a>
             <div className={"mthumb-body"}>

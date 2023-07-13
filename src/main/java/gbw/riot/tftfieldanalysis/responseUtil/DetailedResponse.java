@@ -15,5 +15,8 @@ public record DetailedResponse<T>(T response, ResponseDetails details) {
     public static <T> DetailedResponse<T> of(T response, ResponseDetails details){
         return new DetailedResponse<>(response, details);
     }
+
+    public static DetailedResponse<String> details(String invalid_server_location, String s, Object o) {
+    }
 }
 

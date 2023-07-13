@@ -1,10 +1,13 @@
 package gbw.riot.tftfieldanalysis.controllers;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
+import gbw.riot.tftfieldanalysis.core.ServerLocations;
+import gbw.riot.tftfieldanalysis.core.SummonerDTO;
 import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
+import gbw.riot.tftfieldanalysis.services.DataRetrievalService;
 import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelTrainingService;
@@ -29,6 +32,9 @@ public class ModelTrainingController {
     @Autowired
     private DefaultResponseRegistryService responses;
 
+    @Autowired
+    private DataRetrievalService dataRetrievalService;
+
     @GetMapping("/serverTargets")
     public @ResponseBody ResponseEntity<DetailedResponse<ModelTrainingService.TrainingConfiguration.ServerTargets[]>>
     getValidServerTargets()
@@ -36,6 +42,48 @@ public class ModelTrainingController {
         return new ResponseEntity<>(
                 DetailedResponse.success(
                         ArrayUtil.removeTail(ModelTrainingService.TrainingConfiguration.ServerTargets.values(),1)
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
+
+    @GetMapping("/serverLocations")
+    public @ResponseBody ResponseEntity<DetailedResponse<ServerLocations[]>>
+    getAllServerLocations()
+    {
+        return new ResponseEntity<>(
+                DetailedResponse.success(
+                        ArrayUtil.removeTail(ServerLocations.values(),1)
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
+
+    @GetMapping("/validate/{ign}/server/{server}")
+    public @ResponseBody ResponseEntity<DetailedResponse<String>>
+    validateIGN(@PathVariable String ign, @PathVariable String server){
+        ServerLocations location = ServerLocations.byDomain(server);
+
+        if(location == ServerLocations.ERR_UNKNOWN){
+            return new ResponseEntity<>(
+                    DetailedResponse.details(
+                            new ResponseDetails(
+                                    "Invalid Server Location", "Valid location are: " + ArrayUtil.arrayJoinWith(ServerLocations.values(), ","), null
+                            )
+                    ), HttpStatusCode.valueOf(400)
+            );
+        }
+
+        ValueErrorTuple<SummonerDTO, Exception> result = dataRetrievalService.getAccount(ign, location);
+        if(result.error() != null){
+            return new ResponseEntity<>(
+                    DetailedResponse.details(
+                            new ResponseDetails("Error",result.error().getMessage(), null)
+                    ), HttpStatusCode.valueOf(400)
+            );
+        }
+
+        return new ResponseEntity<>(
+                DetailedResponse.success(
+                        result.value().puuid()
                 ), HttpStatusCode.valueOf(200)
         );
     }

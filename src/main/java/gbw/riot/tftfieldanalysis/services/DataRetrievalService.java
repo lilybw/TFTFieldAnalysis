@@ -1,6 +1,8 @@
 package gbw.riot.tftfieldanalysis.services;
 
 import gbw.riot.tftfieldanalysis.core.MatchData;
+import gbw.riot.tftfieldanalysis.core.ServerLocations;
+import gbw.riot.tftfieldanalysis.core.SummonerDTO;
 import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.JSONWrapper;
@@ -29,11 +31,12 @@ public class DataRetrievalService {
      @Autowired
      private SecretsService secrets;
 
-    private final RestTemplate getMatchDataTemplate, getMatchIdsTemplate;
+    private final RestTemplate getMatchDataTemplate, getMatchIdsTemplate, getPUUIDTemplate;
 
     public DataRetrievalService(RestTemplateBuilder restTemplateBuilder) {
         this.getMatchDataTemplate = restTemplateBuilder.build();
         this.getMatchIdsTemplate = restTemplateBuilder.build();
+        this.getPUUIDTemplate = restTemplateBuilder.build();
     }
 
     private ValueErrorTuple<HttpEntity<?>,Exception> getHeaders(){
@@ -86,6 +89,26 @@ public class DataRetrievalService {
         return ValueErrorTuple.value(
                 body == null ? new String[0] : JSONWrapper.parseValueArray(body)
         );
+    }
+
+    public ValueErrorTuple<SummonerDTO, Exception> getAccount(String IGN, ServerLocations target){
+        String url = "https://"+target.domain+".api.riotgames.com/tft/summoner/v1/summoners/by-name/"+IGN;
+        ValueErrorTuple<HttpEntity<?>,Exception> headers = getHeaders();
+        if(headers.error() != null){
+            return ValueErrorTuple.error(headers.error());
+        }
+        ValueErrorTuple<ResponseEntity<SummonerDTO>, RestClientException>
+                responseAttempt = ValueErrorTuple.encapsulate(
+                () -> getPUUIDTemplate.exchange(url, HttpMethod.GET, headers.value(), SummonerDTO.class)
+        );
+        if(responseAttempt.error() != null){
+            return ValueErrorTuple.error(responseAttempt.error());
+        }
+        ResponseEntity<SummonerDTO> response = responseAttempt.value();
+        if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
+            return ValueErrorTuple.error(new Exception(response.toString()));
+        }
+        return ValueErrorTuple.value(response.getBody());
     }
 
     public ValueErrorTuple<Set<String>,Exception> start(ModelTrainingService.TrainingConfiguration config, String basePlayerPUUID, MatchParser forEachMatch, Set<String> excludedMatches){

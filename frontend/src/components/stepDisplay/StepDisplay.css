@@ -1,0 +1,15 @@
+.StepDisplay{
+    position: inherit;
+    width: 100%;
+    color: transparent;
+    background-clip: text;
+    background: linear-gradient(
+        45deg, var(--blue-3), var(--blue-4), var(--blue-2)
+    )
+}
+.dots{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}

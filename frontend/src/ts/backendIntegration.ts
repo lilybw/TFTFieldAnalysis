@@ -103,6 +103,12 @@ export async function getTrainingServerTargets(): Promise<DetailedResponse<strin
 
 }
 
+export async function getServerLocations(): Promise<DetailedResponse<string[]>> {
+    const response = await fetch(`${rootUrl}/train/serverLocations`, {method: "GET", mode: "cors"});
+    const data = await response.json();
+    return data;
+}
+
 
 export async function getBackendVersion(): Promise<DetailedResponse<string>> {
 
