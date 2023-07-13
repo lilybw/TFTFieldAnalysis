@@ -38,6 +38,7 @@ function App() {
     setAppBody(
       <ModelCreator 
         goView={goView}
+        backup={<UniversalBackOffElement />}
       />
     );
   }
@@ -47,6 +48,12 @@ function App() {
       <ModelView modelId={modelId} 
         backup={<UniversalBackOffElement />}
       />);
+  }
+  const goLanding = () => {
+    updatePrev();
+    setAppBody(
+      <Landing goBrowse={goBrowse} goCreate={goCreate} />
+    );
   }
 
   const [appBody, setAppBody] = React.useState<JSX.Element>(
@@ -58,7 +65,7 @@ function App() {
 
   return (
     <div className="App">
-      <Header  frontendVersion={"alpha 0.0.1"} />
+      <Header goLanding={goLanding}  frontendVersion={"alpha 0.0.1"} />
       {appBody}
     </div>
   )

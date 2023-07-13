@@ -95,6 +95,15 @@ export async function trainModel(id: number, config?: TrainingConfiguration, bas
 
 }
 
+export async function getTrainingServerTargets(): Promise<DetailedResponse<string[]>> {
+
+    const response = await fetch(`${rootUrl}/train/serverTargets`, {method: "GET", mode: "cors"});
+    const data = await response.json();
+    return data;
+
+}
+
+
 export async function getBackendVersion(): Promise<DetailedResponse<string>> {
 
     const response = await fetch(`http://${backendIp}:${backendPort}/version`,

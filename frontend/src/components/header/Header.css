@@ -9,6 +9,9 @@
     height: 5rem;
     color: white;
     position: absolute;
+
+    background: linear-gradient(transparent, var(--translucent-white-01));
+
     top: 0;
     left: 50%;
     z-index: 100;

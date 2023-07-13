@@ -48,6 +48,10 @@ public class ArrayUtil {
         return Stream.of(arr).mapToInt(Integer::parseInt).toArray();
     }
 
+    public static <T> T[] removeTail(T[] arr, int len){
+        return Arrays.copyOf(arr,arr.length - len);
+    }
+
     public static <T extends Comparable<? super T>> List<T> sort(Collection<T> c, Comparator<? super T> comparator) {
         List<T> list = new ArrayList<T>(c);
         list.sort(comparator);

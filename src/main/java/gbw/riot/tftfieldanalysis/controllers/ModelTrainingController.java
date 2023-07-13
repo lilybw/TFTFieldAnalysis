@@ -18,7 +18,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/train")
-public class MdelTrainingController {
+public class ModelTrainingController {
 
     @Autowired
     private ModelRegistryService registry;
@@ -35,7 +35,7 @@ public class MdelTrainingController {
     {
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        ModelTrainingService.TrainingConfiguration.ServerTargets.values()
+                        ArrayUtil.removeTail(ModelTrainingService.TrainingConfiguration.ServerTargets.values(),1)
                 ), HttpStatusCode.valueOf(200)
         );
     }

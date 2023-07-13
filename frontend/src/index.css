@@ -30,15 +30,6 @@
   src: url("./assets/fonts/Spiegel_TT_Bold.ttf") format('ttf');
 }
 
-html{
-  overflow:hidden;
-  background-image: 
-    url("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/lcu-article-backdrop.jpg"), 
-    linear-gradient(var(--blue-5),var(--blue-6));
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-}
 
 
 :root {
@@ -99,6 +90,17 @@ html{
   -webkit-text-size-adjust: 100%;
   overflow: clip;
 }
+html{
+  overflow:hidden;
+  background-image: 
+    url("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/lcu-article-backdrop.jpg"), 
+    linear-gradient(var(--blue-5),var(--blue-6));
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: var(--gold-1);
+}
+
 
 input {
   padding: 5%;
@@ -106,6 +108,7 @@ input {
   background-color: rgba(0, 0, 0, 0.5);
   height: var(--circle-height);
   transition: all 0.5s;
+  color: var(--gold-2);
   text-align: center;
   font-size: 100%;
 }

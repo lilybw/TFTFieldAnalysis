@@ -4,9 +4,10 @@ import { getBackendVersion } from '../../ts/backendIntegration'
 
 interface HeaderProps {
     frontendVersion: String;
+    goLanding: () => void;
 }
 
-const Header = ({ frontendVersion}: HeaderProps): JSX.Element => {
+const Header = ({ frontendVersion, goLanding}: HeaderProps): JSX.Element => {
     const [backendVersion, setBackendVersion] = React.useState("Unavailable")
 
     React.useEffect(() => {
@@ -18,7 +19,7 @@ const Header = ({ frontendVersion}: HeaderProps): JSX.Element => {
 
     return (
         <div className="Header">
-            <h1>TFTFA</h1>
+            <h1 onClick={() => goLanding()}>TFTFA</h1>
             <div className="version">
                 <p>Frontend: {frontendVersion}</p>
                 <p>Backend: {backendVersion}</p>
