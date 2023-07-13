@@ -36,23 +36,33 @@ public class ModelTrainingController {
     private DataRetrievalService dataRetrievalService;
 
     @GetMapping("/serverTargets")
-    public @ResponseBody ResponseEntity<DetailedResponse<ModelTrainingService.TrainingConfiguration.ServerTargets[]>>
+    public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
     getValidServerTargets()
     {
+        ModelTrainingService.TrainingConfiguration.ServerTargets[] values = ArrayUtil.removeTail(ModelTrainingService.TrainingConfiguration.ServerTargets.values(),1);
+        String[] asStringArray = new String[values.length];
+        for(int i = 0; i < values.length; i++){
+            asStringArray[i] = values[i].target;
+        }
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        ArrayUtil.removeTail(ModelTrainingService.TrainingConfiguration.ServerTargets.values(),1)
+                        asStringArray
                 ), HttpStatusCode.valueOf(200)
         );
     }
 
     @GetMapping("/serverLocations")
-    public @ResponseBody ResponseEntity<DetailedResponse<ServerLocations[]>>
+    public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
     getAllServerLocations()
     {
+        ServerLocations[] values = ArrayUtil.removeTail(ServerLocations.values(),1);
+        String[] asStringArray = new String[values.length];
+        for(int i = 0; i < values.length; i++){
+            asStringArray[i] = values[i].domain;
+        }
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        ArrayUtil.removeTail(ServerLocations.values(),1)
+                        asStringArray
                 ), HttpStatusCode.valueOf(200)
         );
     }
@@ -76,7 +86,7 @@ public class ModelTrainingController {
         if(result.error() != null){
             return new ResponseEntity<>(
                     DetailedResponse.details(
-                            new ResponseDetails("Error",result.error().getMessage(), null)
+                            new ResponseDetails(result.error().getMessage(),"Description intentionally cut short.", null)
                     ), HttpStatusCode.valueOf(400)
             );
         }

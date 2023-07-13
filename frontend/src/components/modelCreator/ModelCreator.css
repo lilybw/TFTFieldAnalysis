@@ -26,3 +26,53 @@
     border-color: var(--gold-1);
     font-weight: bold;
 }
+.account-server-list{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    row-gap: .5rem;
+    column-gap: .5rem;
+    width: 100%;
+    justify-content: space-evenly;
+}
+.account-select-button{
+    border: none;
+    border-radius: .5rem;
+    border-bottom: 2px solid var(--gold-2);
+    background: var(--translucent-gradient-1);
+}
+
+.ign-input{
+    position: relative;
+    background: var(--translucent-gradient-1);
+    width: 97%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-radius: .5rem;
+    border-color: var(--gold-2);
+    color: var(--blue-2);
+    padding: .5rem;
+    height: 1rem;
+}
+
+.go-next-button{
+    position: relative;
+    background: var(--translucent-gradient-1);
+    width: 10rem;
+    height: 5rem;
+    border-radius: 1rem;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    margin: 1rem;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+.ign-error{
+    font-style: italic;
+    font-weight: normal;
+    color: var(--red-1);
+}

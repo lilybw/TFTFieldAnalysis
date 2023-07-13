@@ -21,7 +21,7 @@ public class ModelTrainingService {
     public static class TrainingConfiguration{
 
         public enum ServerTargets{
-            EUROPE("europe"), AMERICAS("america"), ASIA("asia"), SEA("sea"), ERR_UNKNOWN("unknown");
+            EUROPE("europe"), AMERICA("america"), ASIA("asia"), SEA("sea"), ERR_UNKNOWN("unknown");
             public final String target;
             ServerTargets(String target){
                 this.target = target;

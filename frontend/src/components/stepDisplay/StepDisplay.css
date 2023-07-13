@@ -1,15 +1,28 @@
 .StepDisplay{
-    position: inherit;
+    position: relative;
     width: 100%;
-    color: transparent;
-    background-clip: text;
-    background: linear-gradient(
-        45deg, var(--blue-3), var(--blue-4), var(--blue-2)
-    )
+
 }
 .dots{
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
+    color: var(--grey-1);
+}
+.former-step{
+    color: var(--gold-2);
+}
+
+.current-step{
+    color: var(--blue-2);
+    background: linear-gradient(
+        transparent,
+        var(--translucent-white-02)
+    );
+}
+
+.dots-spacer{
+    font-weight: bolder;
+    font-size: 1.5rem;
 }

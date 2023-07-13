@@ -79,7 +79,10 @@
   --metal-gradient: linear-gradient(45deg, var(--gold-3), var(--gold-4));
   --radiant-gradient: linear-gradient(45deg, var(--blue-4), var(--blue-2), var(--blue-5));
   --radiant-gradient2: linear-gradient(45deg, var(--blue-2), var(--blue-5), var(--blue-3));
-
+  --translucent-gradient-1: linear-gradient(
+    transparent,
+    var(--translucent-white-02)
+  );
   background-color: var(--bg-color-1);
   color: var(--gold-1);
 

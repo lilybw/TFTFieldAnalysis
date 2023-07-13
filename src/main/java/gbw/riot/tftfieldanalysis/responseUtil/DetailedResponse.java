@@ -16,7 +16,5 @@ public record DetailedResponse<T>(T response, ResponseDetails details) {
         return new DetailedResponse<>(response, details);
     }
 
-    public static DetailedResponse<String> details(String invalid_server_location, String s, Object o) {
-    }
 }
 

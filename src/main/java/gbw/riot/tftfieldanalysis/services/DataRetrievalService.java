@@ -105,6 +105,9 @@ public class DataRetrievalService {
             return ValueErrorTuple.error(responseAttempt.error());
         }
         ResponseEntity<SummonerDTO> response = responseAttempt.value();
+        if(response.getStatusCode() == HttpStatusCode.valueOf(404)){
+            return ValueErrorTuple.error(new Exception("No Such Summoner"));
+        }
         if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
             return ValueErrorTuple.error(new Exception(response.toString()));
         }
