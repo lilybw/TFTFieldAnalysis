@@ -298,4 +298,36 @@ public class DataModelController {
         );
     }
 
+    @GetMapping("/{id}/tags")
+    public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
+    getModelTags(@PathVariable int id)
+    {
+        if(registry == null){
+            return responses.getResponseOnRegistryMissing();
+        }
+        DataModel model = registry.retrieveModel(id);
+        if(model == null){
+            return responses.getResponseOnModelNotFound(id);
+        }
+        DataModel.ModelMetaData metadata = model.getMetaData();
+        List<Integer> sortedTags = metadata.pointsWithTagCount()
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .map(Map.Entry::getKey).toList();
+
+        List<String> translatedSortedTags = new ArrayList<>();
+        sortedTags.forEach(tagAsInt -> {
+            translatedSortedTags.add(
+                    metadata.dictionary().translate(tagAsInt)
+            );
+        });
+
+        return new ResponseEntity<>(
+                DetailedResponse.success(
+                        translatedSortedTags
+                ), HttpStatusCode.valueOf(200)
+        );
+    }
+
 }

@@ -59,18 +59,27 @@ export async function getNamespaces(id: number): Promise<DetailedResponse<string
 
     const response = await fetch(`${__api_v1}/model/${id}/namespaces`, {method: "GET", mode: "cors"});
     const data = await response.json();
+
     return data;
 
 }
 
-export async function getEdgeSets(id: number, points: number[]): Promise<DetailedResponse<Map<number, Set<EdgeDTO>>>> {
+export async function getEdgeSets(id: number, points: number[]): Promise<DetailedResponse<Map<number, EdgeDTO[]>>> {
 
     const url = new URL(`${__api_v1}/model/${id}/edges`);
     url.searchParams.append('points', points.join(','));
 
     const response = await fetch(url.toString(), {method: "GET", mode: "cors"});
     const data = await response.json();
-    return data;
+    const receivedMap: { [key: number]: EdgeDTO[] } = data.response;
+    const map = new Map<number, EdgeDTO[]>();
+
+    Object.keys(receivedMap).forEach((key) => {
+        const intValue = parseInt(key);
+        const edgeDTOs = receivedMap[intValue];
+        map.set(intValue, edgeDTOs);
+    });
+    return Promise.resolve({ response: map, details: data.details });
 
 }
 
@@ -111,6 +120,12 @@ export async function getServerLocations(): Promise<DetailedResponse<string[]>> 
 
 export async function validateIGNandGetPUUID(ign: string, server: string): Promise<DetailedResponse<string>> {
     const response = await fetch(`${__api_v1}/train/validate/${ign}/server/${server}`, {method: "GET", mode: "cors"});
+    const data = await response.json();
+    return data;
+}
+
+export async function getTagsInModel(id: number): Promise<DetailedResponse<string[]>> {
+    const response = await fetch(`${__api_v1}/model/${id}/tags`, {method: "GET", mode: "cors"});
     const data = await response.json();
     return data;
 }

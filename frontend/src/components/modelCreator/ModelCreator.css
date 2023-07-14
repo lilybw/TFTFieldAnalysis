@@ -19,6 +19,7 @@
     height: 5rem;
     border-radius: 1rem;
     background: linear-gradient(transparent,var(--translucent-white-02));
+    text-transform: uppercase;
 }
 
 .chosen{
@@ -37,15 +38,17 @@
 }
 .account-select-button{
     border: none;
+    font-size: 1.5rem;
     border-radius: .5rem;
     border-bottom: 2px solid var(--gold-2);
     background: var(--translucent-gradient-1);
+    text-transform: uppercase;
 }
 
 .ign-input{
     position: relative;
     background: var(--translucent-gradient-1);
-    width: 97%;
+    width: calc(100% - .5rem);
     left: 50%;
     transform: translate(-50%, 0);
     border-top: none;
@@ -56,6 +59,23 @@
     color: var(--blue-2);
     padding: .5rem;
     height: 1rem;
+    font-size: 1.5rem;
+}
+
+.ign-valid{
+    color: var(--blue-2);
+    font-weight: bold;
+}
+.two-by-many-grid{
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    padding: 1rem;
+    justify-content: space-between;
+    column-gap: 1rem;
+    row-gap: 1rem;
+
 }
 
 .go-next-button{
@@ -63,10 +83,12 @@
     background: var(--translucent-gradient-1);
     width: 10rem;
     height: 5rem;
+    font-size: 200%;
     border-radius: 1rem;
     border-top: none;
     border-left: none;
     border-right: none;
+    border-bottom: 2px solid var(--gold-2);
     margin: 1rem;
     left: 50%;
     transform: translate(-50%, 0);

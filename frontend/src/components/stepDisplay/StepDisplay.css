@@ -16,10 +16,7 @@
 
 .current-step{
     color: var(--blue-2);
-    background: linear-gradient(
-        transparent,
-        var(--translucent-white-02)
-    );
+
 }
 
 .dots-spacer{

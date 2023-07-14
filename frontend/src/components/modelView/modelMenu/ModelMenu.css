@@ -1,0 +1,46 @@
+.ModelMenu{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: top;
+    max-width: 100%;
+    width: 100%;
+    height: calc(92vh - var(--_top));
+    border-right: 2px solid var(--gold-4);
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--translucent-white-01)
+    );
+}
+
+.mm-namespace-list,
+.mm-tag-list{
+    height: 60vh;
+}
+
+.mm-namespace-list, .mm-tag-list, .tag-button, .namespace-button{
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    width: 100%;
+}
+.tag-button,
+.namespace-button{
+    display: grid;
+    font-size: 100%;
+    text-overflow: ellipsis;
+    text-align: center;
+    border-bottom: 2px solid var(--gold-4);
+    width: 90%;
+    min-height: 5rem;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: transparent;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    align-items: center;
+}

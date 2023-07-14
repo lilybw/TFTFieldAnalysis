@@ -1,7 +1,7 @@
 import React from 'react';
 import './ModelCreator.css';
 import { Backupable, Viewer } from '../../ts/component';
-import { getServerLocations, getTrainingServerTargets, validateIGNandGetPUUID } from '../../ts/backendIntegration';
+import { createModel, getServerLocations, getTrainingServerTargets, trainModel, validateIGNandGetPUUID } from '../../ts/backendIntegration';
 import StepDisplay from '../stepDisplay/StepDisplay';
 
 interface ModelCreatorProps extends Backupable, Viewer{}
@@ -20,6 +20,10 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
     const [ignIsValid, setIgnIsValid] = React.useState<boolean>(false);
     const [ign, setIGN] = React.useState<string | null>(null);
     const [ignError, setIgnError] = React.useState<string | null>(null);
+    const [settingsError, setSettingsError] = React.useState<string | null>(null);
+    const [modelId, setModelId] = React.useState<number | null>(null);
+    const [trainingDone, setTrainingDone] = React.useState<boolean>(false);
+    const [startCreation, setStartCreation] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         getServerLocations().then(locations => {
@@ -47,18 +51,58 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
             }
             setIgnIsValid(true);
             setIgnError(null);
+            setPuuid(response.response);
         })
     }, [selectedAccountServer, ign])
 
+    React.useEffect(() => {
+        if(selectedServerTarget == null || !ignIsValid || matchCount == null){
+            return;
+        }
+        const createAndTrain = async () => {
+            const creation = await createModel();
+            console.log("id is " + creation.response.metadata.modelId)
+            await trainModel(
+                creation.response.metadata.modelId,
+                {
+                    maxMatchCount: matchCount,
+                    patch: undefined,
+                    confineToBasePlayer: confine
+                },
+                puuid!
+            ).then(response => {
+                if (response.response == null) {
+                    console.log("Error training model: " + response.details.name);
+                    return;
+                }
+                setModelId(response.response);
+                setTrainingDone(true);
+            });
+            console.log("going to view model")
+            goView(creation.response.metadata.modelId);
+            setTrainingDone(true);
+        }
+        createAndTrain();
+    }, [startCreation])
+
     const onSubmit = () => {
         console.log("Submitted model")
+        setProgress(progress + 1);
+        setStartCreation(true);
     }
 
     const goNextFromIgn = () => {
         if(ignIsValid){
             setProgress(progress + 1);
-        }else{
-
+        }
+    }
+    const goNextFromSettings = () => {
+        if(selectedServerTarget != null && matchCount != null){
+            setProgress(progress + 1);
+        }else if (selectedServerTarget == null){
+            setSettingsError("Please select a server target")
+        }else if (matchCount == null){
+            setSettingsError("Please enter a match count")
         }
     }
 
@@ -97,7 +141,7 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
                         <></>
                     }
 
-                    <button className="go-next-button" onClick={() => goNextFromIgn()}>
+                    <button className={"go-next-button" + (ignIsValid ? " ign-valid" : "")} onClick={() => goNextFromIgn()}>
                         &gt;
                     </button>
                     </>
@@ -119,21 +163,27 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
                         })}
                     </div>
                     <h2>Step 3: How patient are you?</h2>
-                    <label htmlFor="maxMatchCount">Max Match Count</label>
-                    <input type="number" id="maxMatchCount" 
-                        value={matchCount} onChange={e => setMatchCount(Number(e.target.value))}
-                        ></input>
+                    <h3>Max Match Count</h3>
+                    <input type="number" id="maxMatchCount" className="ign-input"
+                    value={matchCount} onChange={e => setMatchCount(Number(e.target.value))}
+                    ></input>
 
                     <h2>Step 4: Further miscellanious options:</h2>
-                    <label htmlFor="confine">Confine search</label>
+                    <h3>Confine search</h3>
                     <input type="checkbox" id="confine" 
-                        value={confine ? "on" : "off"} onChange={e => setConfine(Boolean(e.target.value))}
-                        ></input>
+                    value={confine ? "on" : "off"} onChange={e => setConfine(Boolean(e.target.value))}
+                    ></input>
 
-                    <button className="submit-model"
-                        onClick={() => onSubmit()}
-                    >
-                        Run
+                    {
+                        settingsError != null ?
+                                <h4 className="ign-error">{settingsError}</h4>
+                            :
+                            <></>
+                    }
+
+                    <button className={"go-next-button" + (ignIsValid ? " ign-valid" : "")} 
+                            onClick={() => goNextFromSettings()}>
+                        &gt;
                     </button>
                     </>
                 )
@@ -141,16 +191,39 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
             case 2: {
                 return (
                     <>
-                    
+                    <h2>Step 3: Confirmation</h2>
+                    <div className="two-by-many-grid">
+                        <h3>IGN:</h3>
+                        <p className="setting-value">{ign}</p>
+                        <h3>Server:</h3>
+                        <p className="setting-value">{selectedAccountServer}</p>
+                        <h3>Target:</h3>
+                        <p className="setting-value">{selectedServerTarget}</p>
+                        <h3>Max Match Count:</h3>
+                        <p className="setting-value">{matchCount}</p>
+                        <h3>Confine:</h3>
+                        <p className="setting-value">{confine ? "on" : "off"}</p>
+                    </div>
+                    <button className={"go-next-button" + (ignIsValid ? " ign-valid" : "")}
+                        onClick={() => onSubmit()}>
+                        Generate
+                    </button>
                     </>
                 )
             }//done
+            case 3: {
+                return (
+                    <>
+                    <h2>Hold on...</h2>
+                    </>
+                )
+            }
         }
     }
 
     return (
         <div className="ModelCreator">
-            <StepDisplay steps={["IGN", "Settings", "Done!"]} currentStep={progress}/>
+            <StepDisplay steps={["IGN", "Settings", "Confirmation", "Magick!"]} currentStep={progress}/>
             {getStep()}
 
         </div>
