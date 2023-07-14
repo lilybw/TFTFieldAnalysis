@@ -2,8 +2,7 @@ package gbw.riot.tftfieldanalysis.controllers;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
-import gbw.riot.tftfieldanalysis.core.Dictionary;
-import gbw.riot.tftfieldanalysis.core.Edge;
+import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;

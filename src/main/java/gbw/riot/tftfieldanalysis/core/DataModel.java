@@ -2,6 +2,7 @@ package gbw.riot.tftfieldanalysis.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ public class DataModel {
             Map<CacheKeys,Long> cachedValues,
             Map<Integer,Long> pointsPerNamespace,
             Map<Integer,Long> pointsWithTagCount,
-            Dictionary<String> dictionary
+            gbw.riot.tftfieldanalysis.core.compressors.Dictionary<String> dictionary
     ) {
         public static ModelMetaData create(int id){
             return new ModelMetaData(

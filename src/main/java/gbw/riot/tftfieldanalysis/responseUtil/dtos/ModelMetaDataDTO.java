@@ -1,12 +1,10 @@
 package gbw.riot.tftfieldanalysis.responseUtil.dtos;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
-import gbw.riot.tftfieldanalysis.core.Dictionary;
-import gbw.riot.tftfieldanalysis.core.MatchData;
+import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public record ModelMetaDataDTO(
         int modelId,

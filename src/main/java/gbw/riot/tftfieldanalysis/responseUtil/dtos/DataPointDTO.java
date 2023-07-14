@@ -2,7 +2,7 @@ package gbw.riot.tftfieldanalysis.responseUtil.dtos;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
-import gbw.riot.tftfieldanalysis.core.Dictionary;
+import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
 
 import java.util.*;
 

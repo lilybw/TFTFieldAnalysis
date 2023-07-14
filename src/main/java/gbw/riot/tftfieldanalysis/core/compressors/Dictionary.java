@@ -1,4 +1,4 @@
-package gbw.riot.tftfieldanalysis.core;
+package gbw.riot.tftfieldanalysis.core.compressors;
 
 import java.util.*;
 
