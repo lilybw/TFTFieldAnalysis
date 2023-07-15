@@ -31,7 +31,7 @@ export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSet
     
     return (
         <div className="ModelMenu">
-            <div
+            <div className="vertical-flex"
                 onMouseEnter={() => setShowNamespaces(true)}
                 onMouseLeave={() => setShowNamespaces(false)}
             >
@@ -49,7 +49,7 @@ export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSet
                 </div>
             </div>
 
-            <div
+            <div className="vertical-flex"
                 onMouseEnter={() => setShowTags(true)}
                 onMouseLeave={() => setShowTags(false)}
             >

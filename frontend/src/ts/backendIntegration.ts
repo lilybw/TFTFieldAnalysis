@@ -83,7 +83,8 @@ export async function getModelMetadata(id: number): Promise<DetailedResponse<Mod
 
 }
 
-export async function trainModel(id: number, config?: TrainingConfiguration, basePUUID?: string): Promise<DetailedResponse<number>> {
+export async function trainModel(id: number, config?: TrainingConfiguration, basePUUID?: string): 
+    Promise<DetailedResponse<number>> {
 
     const response = await fetch(`${__api_v1}/train/${id}?puuid=`+basePUUID, {
         method: 'POST',
@@ -110,7 +111,8 @@ export async function getServerLocations(): Promise<DetailedResponse<string[]>> 
     return data;
 }
 
-export async function validateIGNandGetPUUID(ign: string, server: string): Promise<DetailedResponse<string>> {
+export async function validateIGNandGetPUUID(ign: string, server: string): 
+    Promise<DetailedResponse<string>> {
     const response = await fetch(`${__api_v1}/train/validate/${ign}/server/${server}`, {method: "GET", mode: "cors"});
     const data = await response.json();
     return data;

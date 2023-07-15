@@ -1,7 +1,7 @@
 import React from 'react';
 import './ModelView.css';
-import { DataPointDTO, EdgeDTO, ModelDTO } from '../../ts/types';
-import { getEdgeSets, getModel, getNamespaces, getPoints } from '../../ts/backendIntegration';
+import { DataPointDTO, EdgeDTO, ModelDTO, ModelMetaDataDTO } from '../../ts/types';
+import { getEdgeSets, getModel, getModelMetadata, getNamespaces, getPoints } from '../../ts/backendIntegration';
 import { toList } from '../../ts/dataTypeTranslator';
 import { Backupable } from '../../ts/component';
 import ModelMenu from './modelMenu/ModelMenu';
@@ -17,6 +17,7 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
     const [selectedTags, setSelectedTags] = React.useState<string[]>([])
     const [viewedPoints, setViewedPoints] = React.useState<DataPointDTO[]>([])
     const [selectedPoint, setSelectedPoint] = React.useState<DataPointDTO | null>(null)
+    const [modelMetadata, setModelMetadata] = React.useState<ModelMetaDataDTO | null>(null)
 
     React.useEffect(() => {
         getPoints(modelId, selectedNamespace, selectedPointIds, selectedTags)
@@ -24,6 +25,13 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
             setViewedPoints(pointsResponse.response)
         })
     }, [selectedNamespace, selectedTags, selectedPointIds])
+
+    React.useEffect(() => {
+        getModelMetadata(modelId).then(response => {
+            if(response.response == null) return;
+            setModelMetadata(response.response);
+        })
+    }, [modelId])
 
     const clearSelection = () => {
         setSelectedPointIds([]);
@@ -59,6 +67,8 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
             <DataPointViewPort 
                 point={selectedPoint} 
                 modelId={modelId}
+                selectPoint={setSelectedPoint}
+                metadata={modelMetadata}
             />
             <div className="dp-list">
                 <h2>Points</h2>

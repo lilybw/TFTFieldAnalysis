@@ -1,10 +1,44 @@
 .DataPointViewPort{
+    display: grid;
+    align-items: center;
+    justify-items: center;
     width: 100%;
     min-width: 100%;
 }
 
 .dpwp-point{
+    position: absolute;
+    border: .2rem solid var(--blue-2);
+    border-radius: 1.5rem;
+    border-left: none;
+    border-right: none;
+    padding: 1rem;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow-wrap: clip;
+    max-width: 8rem;
+    text-shadow: 0 0 2rem var(--blue-6);
+    background: var(--blue-5);
+    filter: drop-shadow(0 0 2rem var(--blue-6));
+}
+.dpwp-point-resulting{
+    border: .2rem solid var(--gold-2);
+    border-radius: 1.5rem;
+    border-left: none;
+    border-right: none;
+    padding: 1rem;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow-wrap: clip;
+    max-width: 8rem;
+    text-shadow: 0 0 2rem var(--blue-6);
+    background: var(--gold-5);
+    filter: drop-shadow(0 0 2rem var(--blue-6));
+}
 
+.dpwp-canvas{
+    position: absolute;
+    z-index: -1;
 }
 
 .dpwp-edge-list{
@@ -22,6 +56,16 @@
     overflow-y: scroll;
     white-space: nowrap;
     padding: .5rem;
+}
+
+.dpwp-sensitivity-controls{
+    display: grid;
+    align-items: center;
+    justify-items: center;
+
+    position: absolute;
+    z-index: 10;
+    bottom: var(--_top);
 }
 
 .dpwp-edge{

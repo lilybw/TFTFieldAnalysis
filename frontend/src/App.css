@@ -5,6 +5,27 @@
   justify-items: center;
 }
 
+.vertical-flex{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.horizonal-flex{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-flow{
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  overflow: hidden;
+  white-space: nowrap;
+
+}
+
 .create-model-button, .browse-model-button{
   width: 15rem;
   height: 7.5rem;
