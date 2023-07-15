@@ -10,3 +10,9 @@ export const toSet = <T>(list: T[]): Set<T> => {
     list.forEach((value) => set.add(value));
     return set;
 }
+
+export const toMap = <K>(list: K[], getKeyOf: (element: K) => number): { [key: number]: K } => {
+    const map: { [key: number]: K } = {};
+    list.forEach((value: K) => map[getKeyOf(value)] = value);
+    return map;
+}

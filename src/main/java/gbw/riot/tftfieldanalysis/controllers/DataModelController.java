@@ -187,7 +187,8 @@ public class DataModelController {
     }
 
     @GetMapping("/{id}/namespaces")
-    public @ResponseBody ResponseEntity<DetailedResponse<List<String>>> getNamespaces(@PathVariable int id){
+    public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
+    getNamespaces(@PathVariable int id){
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
@@ -205,7 +206,8 @@ public class DataModelController {
     }
 
     @GetMapping("/{id}/edges")
-    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, List<EdgeDTO>>>> getEdgeSets(
+    public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, List<EdgeDTO>>>>
+    getEdgeSets(
             @RequestParam int[] points, @PathVariable int id
     ){
         if(registry == null){
@@ -280,7 +282,8 @@ public class DataModelController {
     }
 
     @GetMapping("/{id}/metadata")
-    public @ResponseBody ResponseEntity<DetailedResponse<ModelMetaDataDTO>> getModelMetadata(@PathVariable int id){
+    public @ResponseBody ResponseEntity<DetailedResponse<ModelMetaDataDTO>>
+    getModelMetadata(@PathVariable int id){
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }

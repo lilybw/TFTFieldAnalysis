@@ -1,19 +1,13 @@
-.ModelView{
-    position: relative;
-    --_top: 5rem;
-    top: var(--_top);
-    display: grid;
-    grid-template-columns: 1fr 3fr 1fr;
-    grid-template-rows: 1fr;
-    width: 100vw;
-    max-width: 100vw;
-    height: calc(100vh - var(--_top));
-    min-height: calc(100vh - var(--_top));
-    align-items: top;
-    justify-content: center;
+.DataPointViewPort{
+    width: 100%;
+    min-width: 100%;
 }
 
-.dp-list{
+.dpwp-point{
+
+}
+
+.dpwp-edge-list{
     border-left: 2px solid var(--gold-4);
     background: linear-gradient(
         -90deg,
@@ -29,7 +23,8 @@
     white-space: nowrap;
     padding: .5rem;
 }
-.dp-list-item{
+
+.dpwp-edge{
     display: grid;
     grid-template-columns: 1fr 1fr;
     font-size: 100%;
@@ -44,8 +39,4 @@
     border-left: none;
     border-right: none;
     align-items: center;
-}
-.mv-middle{
-    width: 100%;
-    min-width: 100%;
 }

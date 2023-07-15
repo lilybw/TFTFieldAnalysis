@@ -43,7 +43,7 @@ export async function getPoints(
     namespace?: string,
     pointIds?: number[],
     tags?: string[]
-): Promise<DetailedResponse<Set<DataPointDTO>>> {
+): Promise<DetailedResponse<DataPointDTO[]>> {
 
     const url = new URL(`${__api_v1}/model/${id}/points`);
     if (namespace) url.searchParams.append('namespace', namespace);
@@ -64,23 +64,15 @@ export async function getNamespaces(id: number): Promise<DetailedResponse<string
 
 }
 
-export async function getEdgeSets(id: number, points: number[]): Promise<DetailedResponse<Map<number, EdgeDTO[]>>> {
+export async function getEdgeSets(id: number, points: number[]): 
+    Promise<DetailedResponse<{[key: number]: EdgeDTO[]}>> {
 
     const url = new URL(`${__api_v1}/model/${id}/edges`);
     url.searchParams.append('points', points.join(','));
 
     const response = await fetch(url.toString(), {method: "GET", mode: "cors"});
     const data = await response.json();
-    const receivedMap: { [key: number]: EdgeDTO[] } = data.response;
-    const map = new Map<number, EdgeDTO[]>();
-
-    Object.keys(receivedMap).forEach((key) => {
-        const intValue = parseInt(key);
-        const edgeDTOs = receivedMap[intValue];
-        map.set(intValue, edgeDTOs);
-    });
-    return Promise.resolve({ response: map, details: data.details });
-
+    return data;
 }
 
 export async function getModelMetadata(id: number): Promise<DetailedResponse<ModelMetaDataDTO>> {

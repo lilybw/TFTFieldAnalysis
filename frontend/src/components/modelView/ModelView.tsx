@@ -5,6 +5,7 @@ import { getEdgeSets, getModel, getNamespaces, getPoints } from '../../ts/backen
 import { toList } from '../../ts/dataTypeTranslator';
 import { Backupable } from '../../ts/component';
 import ModelMenu from './modelMenu/ModelMenu';
+import DataPointViewPort from './dataPointViewPort/DataPointViewPort';
 
 interface ModelViewProps extends Backupable{
     modelId: number;
@@ -15,24 +16,14 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
     const [selectedPointIds, setSelectedPointIds] = React.useState<number[]>([])
     const [selectedTags, setSelectedTags] = React.useState<string[]>([])
     const [viewedPoints, setViewedPoints] = React.useState<DataPointDTO[]>([])
-    const [availablePointsForSelection, setAvailablePointsForSelection] = React.useState<DataPointDTO[]>([])
     const [selectedPoint, setSelectedPoint] = React.useState<DataPointDTO | null>(null)
-    const [edgesForPoint, setEdgesForPoint] = React.useState<EdgeDTO[]>([])
 
     React.useEffect(() => {
         getPoints(modelId, selectedNamespace, selectedPointIds, selectedTags)
         .then(pointsResponse => {
-            setViewedPoints(toList(pointsResponse.response))
+            setViewedPoints(pointsResponse.response)
         })
     }, [selectedNamespace, selectedTags, selectedPointIds])
-
-    React.useEffect(() => {
-        if(selectedPoint == null) return;
-        getEdgeSets(modelId, [selectedPoint.id]).then(response => {
-            if(response.response == null) return;
-            setEdgesForPoint(response.response.get(selectedPoint.id) ?? []);
-        })
-    }, [selectedPoint])
 
     const clearSelection = () => {
         setSelectedPointIds([]);
@@ -65,21 +56,10 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
                 addOrSetTag={addOrSetTag}
                 addOrSetPointId={addOrSetPointId}
             />
-            <div className="mv-middle">
-                <h2>Edges</h2>
-                <div className="mv-edge-list">
-                    {edgesForPoint.map((edge, index) => {
-                        return (
-                            <button className="mv-edge-list-item" key={index}>
-                                <p>Occurence: {edge.occurrence}</p>    
-                                <p>Point A: {edge.pointA}</p>
-                                <p>Point B: {edge.pointB}</p>
-                            </button>
-                        )
-                    }
-                    )}
-                </div>
-            </div>
+            <DataPointViewPort 
+                point={selectedPoint} 
+                modelId={modelId}
+            />
             <div className="dp-list">
                 <h2>Points</h2>
                 {viewedPoints.map((point) => {
