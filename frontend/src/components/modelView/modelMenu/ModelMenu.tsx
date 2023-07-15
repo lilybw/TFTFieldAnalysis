@@ -12,7 +12,9 @@ interface ModelMenuProps{
 
 export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSetPointId }: ModelMenuProps): JSX.Element {
     const [namespaces, setNamespaces] = React.useState<string[]>([]);
+    const [sortedNamespaces, setSortedNamespaces] = React.useState<string[]>([]);
     const [tags, setTags] = React.useState<string[]>([]);
+    const [sortedTags, setSortedTags] = React.useState<string[]>([]);
     const [showNamespaces, setShowNamespaces] = React.useState<boolean>(false);
     const [showTags, setShowTags] = React.useState<boolean>(false);
 
@@ -20,24 +22,38 @@ export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSet
     React.useEffect(() => {
         getTagsInModel(modelId).then(tags => {
             setTags(tags.response);
+            setSortedTags(tags.response);
         })
     }, []);
 
     React.useEffect(() => {
         getNamespaces(modelId).then(namespaces => {
             setNamespaces(namespaces.response);
+            setSortedNamespaces(namespaces.response);
         })
     }, []);
     
     return (
         <div className="ModelMenu">
+            
+            <h2>Point Selection Categories</h2>
             <div className="vertical-flex"
                 onMouseEnter={() => setShowNamespaces(true)}
-                onMouseLeave={() => setShowNamespaces(false)}
+                onMouseLeave={() => {
+                    setShowNamespaces(false);
+                    setSortedNamespaces(namespaces);
+                }}
             >
-                <h2>Namespaces</h2>
+                <h3 style={{ color: "var(--blue-2)" }}>Namespaces..</h3>
+                
                 <div className={"mm-namespace-list" + (showNamespaces ? "" : " hidden")}>
-                    {namespaces.map((namespace, index) => {
+                    <input type="text" placeholder="Search" className="namespace-search"
+                        onChange={e => {
+                            const search = e.target.value;
+                            setSortedNamespaces(namespaces.filter(namespace => namespace.includes(search)));
+                        }}
+                    />
+                    {sortedNamespaces.map((namespace, index) => {
                         return (
                             <button className="namespace-button" key={index}
                                 onClick={e => setNamespace(namespace, e.shiftKey)}>
@@ -51,11 +67,20 @@ export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSet
 
             <div className="vertical-flex"
                 onMouseEnter={() => setShowTags(true)}
-                onMouseLeave={() => setShowTags(false)}
+                onMouseLeave={() => {
+                    setShowTags(false);
+                    setSortedTags(tags);
+                }}
             >
-                <h2>Tags</h2>
+                <h3 style={{color: "var(--blue-2)"}}>Tags..</h3>
                 <div className={"mm-tag-list" + (showTags ? "" : " hidden")}>
-                    {tags.map((tag, index) => {
+                    <input type="text" placeholder="Search" className="namespace-search"
+                        onChange={e => {
+                            const search = e.target.value;
+                            setSortedTags(tags.filter(tag => tag.includes(search)));
+                        }}
+                    />
+                    {sortedTags.map((tag, index) => {
                         return (
                             <button className="tag-button" key={index}
                                 onClick={e => addOrSetTag(tag, e.shiftKey)}>

@@ -5,6 +5,7 @@ import Landing from './components/landing/Landing';
 import ModelBrowser from './components/modelBrowser/ModelBrowser';
 import ModelCreator from './components/modelCreator/ModelCreator';
 import ModelView from './components/modelView/ModelView';
+import Footer from './components/footer/Footer';
 
 function App() {
 
@@ -67,6 +68,7 @@ function App() {
     <div className="App">
       <Header goLanding={goLanding}  frontendVersion={"alpha 0.0.1"} />
       {appBody}
+      <Footer />
     </div>
   )
 }

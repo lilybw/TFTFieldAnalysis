@@ -17,7 +17,7 @@
 
 .mm-namespace-list,
 .mm-tag-list{
-    height: 60vh;
+    height: 55vh;
 }
 
 .mm-namespace-list, .mm-tag-list, .tag-button, .namespace-button{
@@ -36,6 +36,7 @@
     border-bottom: 2px solid var(--gold-4);
     width: 20rem;
     min-height: 5rem;
+    max-height: 5rem;
     overflow: hidden;
     border-radius: 1rem;
     background: transparent;

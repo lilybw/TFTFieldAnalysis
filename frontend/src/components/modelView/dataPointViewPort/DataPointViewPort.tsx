@@ -57,7 +57,7 @@ export default function DataPointViewPort({point, modelId, selectPoint, metadata
                 setResultingPoints(toMap(response.response, (point) => point.id));
             });
 
-            const pointOffsets = await drawEdges(edges, canvasRef.current, point.id, metadata!,edgeMinOccurrence);
+            const pointOffsets = await drawEdges(edges, canvasRef.current, point.id,edgeMinOccurrence);
             setResultingPointOffsets(pointOffsets);
         }
         loadEdgesAndResultingPoints();
@@ -66,7 +66,7 @@ export default function DataPointViewPort({point, modelId, selectPoint, metadata
     React.useLayoutEffect(() => {
         const updateCanvas = () => {
             if(point == null) return;
-            drawEdges(edgesForPoint, canvasRef.current, point.id, metadata!,edgeMinOccurrence);
+            drawEdges(edgesForPoint, canvasRef.current, point.id,edgeMinOccurrence);
             setCanvasDim({
                     width: window.innerWidth*.5, 
                     height: window.innerHeight*.5
@@ -78,7 +78,7 @@ export default function DataPointViewPort({point, modelId, selectPoint, metadata
 
     React.useEffect(() => {
         if(point == null) return;
-        drawEdges(edgesForPoint, canvasRef.current, point.id, metadata!, edgeMinOccurrence);
+        drawEdges(edgesForPoint, canvasRef.current, point.id, edgeMinOccurrence);
     }, [edgeMinOccurrence])
 
     const getContent = () => {

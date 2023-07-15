@@ -32,7 +32,7 @@
     overflow-wrap: clip;
     max-width: 8rem;
     text-shadow: 0 0 2rem var(--blue-6);
-    background: var(--gold-5);
+    background: var(--blue-5);
     filter: drop-shadow(0 0 2rem var(--blue-6));
 }
 

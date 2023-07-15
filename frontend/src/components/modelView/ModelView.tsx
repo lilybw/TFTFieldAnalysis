@@ -6,23 +6,26 @@ import { toList } from '../../ts/dataTypeTranslator';
 import { Backupable } from '../../ts/component';
 import ModelMenu from './modelMenu/ModelMenu';
 import DataPointViewPort from './dataPointViewPort/DataPointViewPort';
+import { contains } from '../../ts/arrayUtil';
 
 interface ModelViewProps extends Backupable{
     modelId: number;
 }
 
 export default function ModelView({modelId, backup}: ModelViewProps): JSX.Element {
-    const [selectedNamespace, setSelectedNamespace] = React.useState<string>("")
-    const [selectedPointIds, setSelectedPointIds] = React.useState<number[]>([])
-    const [selectedTags, setSelectedTags] = React.useState<string[]>([])
-    const [viewedPoints, setViewedPoints] = React.useState<DataPointDTO[]>([])
-    const [selectedPoint, setSelectedPoint] = React.useState<DataPointDTO | null>(null)
-    const [modelMetadata, setModelMetadata] = React.useState<ModelMetaDataDTO | null>(null)
+    const [selectedNamespace, setSelectedNamespace] = React.useState<string>("");
+    const [selectedPointIds, setSelectedPointIds] = React.useState<number[]>([]);
+    const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
+    const [viewedPoints, setViewedPoints] = React.useState<DataPointDTO[]>([]);
+    const [sortedViewedPoints, setSortedViewedPoints] = React.useState<DataPointDTO[]>([]);
+    const [selectedPoint, setSelectedPoint] = React.useState<DataPointDTO | null>(null);
+    const [modelMetadata, setModelMetadata] = React.useState<ModelMetaDataDTO | null>(null);
 
     React.useEffect(() => {
         getPoints(modelId, selectedNamespace, selectedPointIds, selectedTags)
         .then(pointsResponse => {
-            setViewedPoints(pointsResponse.response)
+            setViewedPoints(pointsResponse.response);
+            setSortedViewedPoints(pointsResponse.response);
         })
     }, [selectedNamespace, selectedTags, selectedPointIds])
 
@@ -72,7 +75,18 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
             />
             <div className="dp-list">
                 <h2>Points</h2>
-                {viewedPoints.map((point) => {
+                <input type="text" placeholder="Search" className="dp-search"
+                    onChange={e => {
+                        const term = e.target.value;
+                        setSortedViewedPoints(viewedPoints.filter(
+                            point => contains(point.tags, term, (e, t) => e == t) || Number(term) == point.id
+                        ));
+                    }}
+                    onBlur={() => {
+                        setSortedViewedPoints(viewedPoints);
+                    }}
+                />
+                {sortedViewedPoints.map((point) => {
                     return (
                         <button className="dp-list-item" key={point.id}
                             onClick={() => setSelectedPoint(point)}

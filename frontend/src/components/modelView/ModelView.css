@@ -29,6 +29,9 @@
     white-space: nowrap;
     padding: .5rem;
 }
+.dp-search{
+    margin-bottom: 1rem;
+}
 .dp-list-item{
     display: grid;
     grid-template-columns: 1fr 1fr;

@@ -17,6 +17,7 @@
     transform: translate(-50%,0);
     transition: top .5s ease-in-out;
     box-shadow: 0 0 2rem var(--blue-6);
+
 }
 
 .about-button {
@@ -32,8 +33,14 @@
     bottom: -4rem;
     width: 10rem;
     border-radius: 0 0 1rem 1rem;
+    backdrop-filter: blur(1rem);
 }
 
 .content{
     padding: 1rem;
+    overflow: hidden;
+}
+
+h2{
+    color: var(--gold-2);
 }

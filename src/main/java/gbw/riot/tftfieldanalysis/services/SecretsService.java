@@ -1,5 +1,6 @@
 package gbw.riot.tftfieldanalysis.services;
 
+import gbw.riot.tftfieldanalysis.core.RequestsEnvironmentResource;
 import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequestsEnvironmentResource
 public class SecretsService {
 
     private static String root;
@@ -80,6 +82,7 @@ public class SecretsService {
                     return ValueErrorTuple.value(split[1]);
                 }
             }
+            br.close();
         }catch (IOException e){
             return ValueErrorTuple.error(e);
         }
