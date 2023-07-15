@@ -169,10 +169,13 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
                     ></input>
 
                     <h2>Step 4: Further miscellanious options:</h2>
-                    <h3>Confine search</h3>
-                    <input type="checkbox" id="confine" 
-                    value={confine ? "on" : "off"} onChange={e => setConfine(Boolean(e.target.value))}
-                    ></input>
+                        <div className="horizonal-flex misc-setting">
+                        <h3>Confine search</h3>
+                        <input type="checkbox" id="confine"
+                            value={confine ? "on" : "off"} onChange={e => setConfine(Boolean(e.target.value))}
+                        ></input>
+                    </div>
+
 
                     {
                         settingsError != null ?

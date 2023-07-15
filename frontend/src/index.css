@@ -97,7 +97,8 @@ html{
   overflow:hidden;
   background-image: 
     url("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/lcu-article-backdrop.jpg"), 
-    linear-gradient(var(--blue-5),var(--blue-6));
+    linear-gradient(var(--blue-5),var(--blue-6)
+    );
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;

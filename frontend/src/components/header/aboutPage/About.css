@@ -1,0 +1,39 @@
+.About{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: top;
+    top: 0;
+    background-image:
+        url("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/lcu-article-backdrop.jpg"),
+        linear-gradient(var(--blue-5), var(--blue-6)
+    );
+    border: 2px solid var(--gold-3);
+    border-radius: 1rem;
+    border-top: none;
+    border-bottom: none;
+    width: 50%;
+    left: 50%;
+    transform: translate(-50%,0);
+    transition: top .5s ease-in-out;
+    box-shadow: 0 0 2rem var(--blue-6);
+}
+
+.about-button {
+    position: absolute;
+
+    background: var(--translucent-gradient-1);
+    left: 50%;
+    transform: translate(-50%,0);
+    font-size: 150%;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    bottom: -4rem;
+    width: 10rem;
+    border-radius: 0 0 1rem 1rem;
+}
+
+.content{
+    padding: 1rem;
+}
