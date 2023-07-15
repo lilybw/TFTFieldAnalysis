@@ -11,6 +11,11 @@ public record ValueErrorTuple<T, R>(T value, R error) {
     public interface OneParameterTupleRetriever<K, N, M extends Throwable> {
         K run(N value) throws M;
     }
+    @FunctionalInterface
+    public interface TwoParameterTupleRetriever<K, N, L, M extends Throwable> {
+        K run(N var1, L var2) throws M;
+    }
+
 
     public static <T, R> ValueErrorTuple<T, R> value(T value) {
         return new ValueErrorTuple<>(value, null);
@@ -37,6 +42,16 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         T result = null;
         try {
             result = retriever.run(value);
+        } catch (Throwable e) {
+            return of(result,(R) e);
+        }
+        return of(result, null);
+    }
+    //Yeah I'm not going beyond this, one person can only keep track so much
+    public static <T,N,L,R extends Throwable> ValueErrorTuple<T,R> encapsulate(TwoParameterTupleRetriever<T,N,L,R> retriever, N var1, L var2){
+        T result = null;
+        try {
+            result = retriever.run(var1,var2);
         } catch (Throwable e) {
             return of(result,(R) e);
         }
