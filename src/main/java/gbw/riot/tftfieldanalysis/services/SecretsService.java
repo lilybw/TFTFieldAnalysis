@@ -37,38 +37,46 @@ public class SecretsService {
 
     private final Map<String,DateValueEntry> cache = new HashMap<>();
 
-    public ValueErrorTuple<String,Exception> getByKey(String key){
+    public ValueErrorTuple<String,Exception> getConfigurable(String key) {
+        return getByKey(key, "/runtimeConfigurables.txt");
+    }
+
+    public ValueErrorTuple<String,Exception> getSecret(String key){
+        return getByKey(key, "/secrets.txt");
+    }
+
+    private ValueErrorTuple<String,Exception> getByKey(String key, String pathAndFile){
         DateValueEntry entry = cache.get(key);
         final long now = System.currentTimeMillis();
         if(entry == null){
             //if no entry - i.e. on first request - load the value
-            loadKVToCache(key);
+            loadKVToCache(key,pathAndFile);
         }else if(entry.ms < now + 5000){
             //if older than 5 seconds, reload value
-            updateCacheEntry(entry, key, now);
+            updateCacheEntry(entry, key, now,pathAndFile);
         }
         return cache.get(key).result;
     }
 
-    private void updateCacheEntry(DateValueEntry entry, String key, long now){
-        entry.result = getValueOf(key);
+    private void updateCacheEntry(DateValueEntry entry, String key, long now, String pathAndFile){
+        entry.result = getValueOf(key,pathAndFile);
         entry.ms = now;
     }
 
-    private void loadKVToCache(String key){
+    private void loadKVToCache(String key, String pathAndFile){
         final long processStart = System.currentTimeMillis();
         cache.put(
                 key,
                 new DateValueEntry(
                         processStart,
-                        getValueOf(key)
+                        getValueOf(key, pathAndFile)
                 )
         );
     }
 
-    private ValueErrorTuple<String,Exception> getValueOf(String key){
+    private ValueErrorTuple<String,Exception> getValueOf(String key, String pathAndFile){
         try{
-            BufferedReader br = new BufferedReader(new FileReader(root + "/secrets.txt"));
+            BufferedReader br = new BufferedReader(new FileReader(root + pathAndFile));
             String line;
             String[] split;
             while((line = br.readLine()) != null){

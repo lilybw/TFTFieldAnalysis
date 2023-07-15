@@ -11,7 +11,7 @@ public class WebServiceMetadataService {
     private SecretsService secrets;
 
     public ValueErrorTuple<String,Exception> getVersion(){
-        return secrets.getByKey("Api-Version");
+        return secrets.getSecret("Api-Version");
     }
 
 }

@@ -165,8 +165,9 @@ public class ArrayUtil {
     }
 
     public static <T> T[] resize(T[] arr, BooleanFunction<T> includeFunc){
-        return filter(arr, includeFunc, obj -> {});
+        return filter(arr, includeFunc, obj -> {return;});
     }
+
     public static <T> Set<T> resize(Set<T> set, BooleanFunction<T> includeFunc){
         Set<T> toReturn = new HashSet<>();
         set.forEach(obj -> {
@@ -189,6 +190,15 @@ public class ArrayUtil {
             asPrimitive[i] = resized.get(i);
         }
         return asPrimitive;
+    }
+    public static String[] resize(String[] array, BooleanFunction<String> includeFunc){
+        List<String> list = new ArrayList<>();
+        for(String s : array){
+            if(includeFunc.eval(s)){
+                list.add(s);
+            }
+        }
+        return list.toArray(new String[0]);
     }
     public static <T> T[] filter(T[] arr, BooleanFunction<T> filterFunc, VoidFunction<T> onFilterEvent){
         List<T> toReturn = new ArrayList<>();

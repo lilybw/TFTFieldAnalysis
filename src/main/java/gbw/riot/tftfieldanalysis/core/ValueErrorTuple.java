@@ -57,4 +57,8 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         }
         return of(result, null);
     }
+
+    public boolean hasError(){
+        return this.error() != null;
+    }
 }

@@ -41,7 +41,7 @@ public class DataRetrievalService {
 
     private ValueErrorTuple<HttpEntity<?>,Exception> getHeaders(){
         HttpHeaders headers = new HttpHeaders();
-        ValueErrorTuple<String,Exception> errVal = secrets.getByKey("X-Riot-Token");
+        ValueErrorTuple<String,Exception> errVal = secrets.getSecret("X-Riot-Token");
         headers.set("X-Riot-Token", errVal.value());
         headers.setContentType(MediaType.APPLICATION_JSON);
         return ValueErrorTuple.of(new HttpEntity<>("",headers), errVal.error());

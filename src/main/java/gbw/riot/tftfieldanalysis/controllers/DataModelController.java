@@ -132,7 +132,7 @@ public class DataModelController {
                                         point -> ArrayUtil.contains(pointIds, point.getId())
                                 );
             case 4 -> {
-                toReturn = model.getPointsWithAnyOf(tags);
+                toReturn = model.getPointsWithTags(tags);
             }
             case 5 -> {//points in namespace x with tags x,y,z
                 translatedTags = dictionary.reverseTranslateAll(tags);
@@ -299,6 +299,8 @@ public class DataModelController {
                 ), HttpStatusCode.valueOf(200)
         );
     }
+
+
 
     @GetMapping("/{id}/tags")
     public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>

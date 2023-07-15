@@ -92,12 +92,10 @@ public class DataModel {
         }
         return toReturn;
     }
-    public Map<Integer,Set<Edge>> getEdgesForPoints(Integer[] points){
-        Map<Integer,Set<Edge>> toReturn = new HashMap<>();
-        for(Integer i : points){
-            toReturn.put(i, pointEdgesMap.get(i));
-        }
-        return toReturn;
+
+    public Edge getEdgeBetween(DataPoint pointA, DataPoint pointB){
+        int combinedHash = Objects.hash(pointA, pointB);
+        return edgeTable.get(combinedHash);
     }
 
     /**
@@ -183,6 +181,7 @@ public class DataModel {
     public Set<Integer> getNamespaces(){
         return namespacePointMap.keySet();
     }
+
     public Set<DataPoint> getPointsWithTags(String[] tags){
         Set<DataPoint> toReturn = new HashSet<>();
         int[] translatedTags = metadata.dictionary().reverseTranslateAll(tags);
@@ -191,11 +190,6 @@ public class DataModel {
         }
         return toReturn;
     }
-    public Set<DataPoint> getPointsWithTag(String tag){
-        return pointsWithTagMap.get(
-                metadata.dictionary().reverseTranslate(tag)
-        );
-    }
 
     public Set<DataPoint> getSpecificDataPoints(int[] ids){
         Set<DataPoint> toReturn = new HashSet<>();
@@ -203,13 +197,6 @@ public class DataModel {
             toReturn.add(pointIdMap.get(i));
         }
         return toReturn;
-    }
-    public Set<DataPoint> getPointsWithAnyOf(String[] tags){
-        int[] translatedTags = metadata.dictionary().reverseTranslateAll(tags);
-        return ArrayUtil.resize(
-                allPoints,
-                point -> ArrayUtil.containsAnyOf(translatedTags, point.getTags())
-        );
     }
 
     public ModelMetaData getMetaData(){
