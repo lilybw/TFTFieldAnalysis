@@ -8,9 +8,8 @@ const toAbsolute = (point: {x: number, y: number}, center: {x: number, y: number
 };
 
 const calcVarianceMod = (i: number, varianceSteps: number) => {
-
-    const varianceModifier = i % 2 == 0 ? 1 : 0;
-    return varianceModifier * (i % varianceSteps);
+    const stepSize = 1 / varianceSteps;
+    return i % varianceSteps * stepSize;
 }
 
 /**
@@ -35,6 +34,8 @@ export const drawEdges = async (edges: EdgeDTO[], canvas: HTMLCanvasElement | nu
         if(edge.occurrence > localOccMax) localOccMax = edge.occurrence;
     });
 
+    const absoluteStyles = window.getComputedStyle(canvas);
+
     const center = {x: canvas.width / 2, y: canvas.height / 2};
     const length = Math.min(canvas.width, canvas.height) / 2.5;
 
@@ -53,8 +54,8 @@ export const drawEdges = async (edges: EdgeDTO[], canvas: HTMLCanvasElement | nu
         const varianceModifier = calcVarianceMod(i, varianceSteps);
 
         const end = {
-            x: center.x + Math.cos(angleIncrement * i - angleOffset) * (length - varianceModifier * canvas.width * 10),
-            y: center.y + Math.sin(angleIncrement * i - angleOffset) * (length - varianceModifier * canvas.height * 10)
+            x: center.x + Math.cos(angleIncrement * i - angleOffset) * (length - varianceModifier * 200),
+            y: center.y + Math.sin(angleIncrement * i - angleOffset) * (length - varianceModifier * 200)
         };
         
         if(edge.pointA == ogPointId) {

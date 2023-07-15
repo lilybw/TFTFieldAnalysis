@@ -20,6 +20,7 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
     const [sortedViewedPoints, setSortedViewedPoints] = React.useState<DataPointDTO[]>([]);
     const [selectedPoint, setSelectedPoint] = React.useState<DataPointDTO | null>(null);
     const [modelMetadata, setModelMetadata] = React.useState<ModelMetaDataDTO | null>(null);
+    const [namespaces, setNamespaces] = React.useState<string[]>([]);
 
     React.useEffect(() => {
         getPoints(modelId, selectedNamespace, selectedPointIds, selectedTags)
@@ -34,7 +35,12 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
             if(response.response == null) return;
             setModelMetadata(response.response);
         })
+        getNamespaces(modelId).then(response => {
+            if(response.response == null) return;
+            setNamespaces(response.response);
+        })
     }, [modelId])
+
 
     const clearSelection = () => {
         setSelectedPointIds([]);
@@ -66,12 +72,14 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
                 setNamespace={selectNamespace} 
                 addOrSetTag={addOrSetTag}
                 addOrSetPointId={addOrSetPointId}
+                namespaces={namespaces}
             />
             <DataPointViewPort 
                 point={selectedPoint} 
                 modelId={modelId}
                 selectPoint={setSelectedPoint}
                 metadata={modelMetadata}
+                namespaces={namespaces}
             />
             <div className="dp-list">
                 <h2>Points</h2>

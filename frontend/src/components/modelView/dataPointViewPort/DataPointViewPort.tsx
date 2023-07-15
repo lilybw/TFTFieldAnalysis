@@ -4,21 +4,24 @@ import { DataPointDTO, EdgeDTO, ModelMetaDataDTO } from '../../../ts/types';
 import { getEdgeSets, getModelMetadata, getPoints } from '../../../ts/backendIntegration';
 import { toMap } from '../../../ts/dataTypeTranslator';
 import { drawEdges } from '../../../ts/dpwpCanvasManager';
+import { contains, containsAny, notInPlaceAdd, notInPlaceRemoveAll } from '../../../ts/arrayUtil';
 
 interface DataPointViewPort {
     point: DataPointDTO | null;
     modelId: number;
     selectPoint: (point: DataPointDTO) => void;
     metadata: ModelMetaDataDTO | null;
+    namespaces: string[];
 }
-
-export default function DataPointViewPort({point, modelId, selectPoint, metadata}: DataPointViewPort): JSX.Element {
+//a better viewport would probably be showing resulting points within the selected alonside the occurrence value of the edge.
+export default function DataPointViewPort({ point, modelId, selectPoint, metadata, namespaces }: DataPointViewPort): JSX.Element {
     const [resultingPoints, setResultingPoints] = React.useState<{ [key: number]: DataPointDTO; }>({});
     const [edgesForPoint, setEdgesForPoint] = React.useState<EdgeDTO[]>([]);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const [resultingPointOffsets, setResultingPointOffsets] = React.useState<{ [key: number]: {x: number, y: number}; }>({});
     const [canvasDim, setCanvasDim] = React.useState<{width: number, height: number}>({width: 1000, height: 1000});
     const [edgeMinOccurrence, setEdgeMinOccurrence] = React.useState<number>(1);
+    const [ignoredNamespaces, setIgnoredNamespaces] = React.useState<string[]>([]);
 
     const resetAll = () => {
         setResultingPoints({});
@@ -95,16 +98,19 @@ export default function DataPointViewPort({point, modelId, selectPoint, metadata
                     ref={canvasRef}
                     width={canvasDim.width} height={canvasDim.height}>
                 </canvas>
-                <div className="dpwp-point">
+                <button className="dpwp-point"
+                    onClick={() => selectPoint(point)}
+                >
                     <p>{point.namespace}</p>
                     <p>{point.id}</p>
                     <p>{point.tags}</p>
-                </div>
+                </button>
                 {Object.keys(resultingPointOffsets).map((pointId) => {
                     const resultPoint = resultingPoints[Number(pointId)];
 
                     //since it may happen that the resulting points hasn't been loaded yet
                     if(resultPoint == null || resultPoint == undefined) return;
+                    if(contains(ignoredNamespaces, resultPoint.namespace, (r,t) => r == t)) return;
 
                     return(
                         <button className="dpwp-point-resulting" key={resultPoint.id}
@@ -121,19 +127,7 @@ export default function DataPointViewPort({point, modelId, selectPoint, metadata
                         </button>
                     )
                 })}
-                <div className="dpwp-sensitivity-controls">
-                    <h3>Occurrence</h3>
-                    <div className="horizonal-flex">
-                        <p>Min: {metadata?.cachedValues.MIN_OCCURRENCE_VALUE}</p>
-                        <input className="slider" type="range" min="0" 
-                            max={metadata?.cachedValues.MAX_OCCURRENCE_VALUE}
-                            id="occurrence-slider"
-                            defaultValue={edgeMinOccurrence}
-                            onChange={e => setEdgeMinOccurrence(Number(e.target.value))}
-                            />
-                        <p>Max: {metadata?.cachedValues.MAX_OCCURRENCE_VALUE}</p>
-                    </div>
-                </div>
+                
                 </>
             )
         }
@@ -142,6 +136,44 @@ export default function DataPointViewPort({point, modelId, selectPoint, metadata
     return (
         <div className="DataPointViewPort">
             {getContent()}
+            <div className="dpwp-sensitivity-controls">
+                <div>
+                <h3>Occurrence</h3>
+                <div className="horizonal-flex">
+                    <p>Min: {metadata?.cachedValues.MIN_OCCURRENCE_VALUE}</p>
+                    <input className="slider" type="range" min="0"
+                        max={metadata?.cachedValues.MAX_OCCURRENCE_VALUE}
+                        id="occurrence-slider"
+                        defaultValue={edgeMinOccurrence}
+                        onChange={e => setEdgeMinOccurrence(Number(e.target.value))}
+                    />
+                    <p>Max: {metadata?.cachedValues.MAX_OCCURRENCE_VALUE}</p>
+                </div>
+                </div>
+                <div>
+                <h3>Ignored Namespaces</h3>
+                <div className="vertical-flex">
+                    {namespaces.map((namespace, index) => {
+                        return (
+                            <div className="horizonal-flex ignore-options" key={index} >
+                                <label htmlFor={"namespace-checkbox-" + namespace}>{namespace}</label>
+                                <input type="checkbox" id={"namespace-checkbox-" + namespace} className="ignore-namespace-checkbox" key={index}
+                                    onClick={e => {
+                                        const checkbox = e.target as HTMLInputElement;
+                                        if (checkbox.checked){
+                                            setIgnoredNamespaces(notInPlaceAdd(ignoredNamespaces, namespace));
+                                        }else{
+                                            setIgnoredNamespaces(notInPlaceRemoveAll(ignoredNamespaces, namespace));
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )
+                    })
+                    }
+                </div>
+                </div>
+            </div>
         </div>
     );
 }

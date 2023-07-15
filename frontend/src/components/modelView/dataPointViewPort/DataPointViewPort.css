@@ -16,6 +16,7 @@
     text-align: center;
     text-overflow: ellipsis;
     overflow-wrap: clip;
+    overflow: hidden;
     max-width: 8rem;
     text-shadow: 0 0 2rem var(--blue-6);
     background: var(--blue-5);
@@ -60,12 +61,23 @@
 
 .dpwp-sensitivity-controls{
     display: grid;
-    align-items: center;
+    grid-template-columns: 1fr 1fr;
+    width: 90%;
+    align-items: end;
     justify-items: center;
 
     position: absolute;
     z-index: 10;
     bottom: var(--_top);
+}
+
+.ignore-namespace-checkbox{
+
+}
+
+.ignore-options{
+    justify-content: space-between; 
+    width: 100%;
 }
 
 .dpwp-edge{
