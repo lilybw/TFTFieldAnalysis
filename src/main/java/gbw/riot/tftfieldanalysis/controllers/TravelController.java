@@ -3,10 +3,17 @@ package gbw.riot.tftfieldanalysis.controllers;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.DataPointDTO;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.TravelBranchOptionDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.TravelContextSyntaxDeclaration;
 import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import gbw.riot.tftfieldanalysis.services.TravelContextParser;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +33,20 @@ public class TravelController {
     @Autowired
     private TravelContextParser parser;
 
+    @Operation(summary = "Retrieves next options for the current travel context")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of options, unsorted.",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TravelBranchOptionDTO[].class)) }),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode = "404", description = "No such model",
+                    content = { @Content }
+            )
+    })
     @GetMapping("/{modelId}/next")
-    public @ResponseBody ResponseEntity<DetailedResponse<DataPoint[]>>
+    public @ResponseBody ResponseEntity<DetailedResponse<TravelBranchOptionDTO[]>>
     travelModel(@PathVariable int modelId, @RequestParam String context)
     {
         if(registry == null){
@@ -47,8 +66,24 @@ public class TravelController {
         return null;
     }
 
+    @Operation(summary = "Retrieves the full travel context data.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Each entry contains a list of branch options, where the first option is the \"branch origin point\"",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TravelBranchOptionDTO[][].class)) }),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode = "404", description = "No such model",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode="400", description = "Invalid context",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DetailedResponse.class)
+                    )}
+            )
+    })
     @GetMapping("/{modelId}/full")
-    public @ResponseBody ResponseEntity<DetailedResponse<DataPoint[][]>>
+    public @ResponseBody ResponseEntity<DetailedResponse<TravelBranchOptionDTO[][]>>
     getFullTravelPath(@PathVariable int modelId, @RequestParam String context){
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
@@ -65,6 +100,12 @@ public class TravelController {
         return null;
     }
 
+    @Operation(summary = "Retrieves documentation regarding the whole Travel Context ordeal.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of options, unsorted.",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TravelContextSyntaxDeclaration.class)) })
+    })
     @GetMapping("/contextSyntaxDeclaration")
     public @ResponseBody ResponseEntity<DetailedResponse<TravelContextSyntaxDeclaration>>
     getSyntaxDeclaration(){

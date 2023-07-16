@@ -27,4 +27,13 @@ public class DefaultResponseRegistryService {
         );
     }
 
+    public <T> ResponseEntity<DetailedResponse<T>> getResponseOnMissingPUUID(){
+        return new ResponseEntity<>(
+                DetailedResponse.details(
+                        new ResponseDetails("Missing PUUID", "The route expected a player puuid, but recieved nothing", null)
+                ),
+                HttpStatusCode.valueOf(400)
+        );
+    }
+
 }

@@ -11,11 +11,17 @@ import gbw.riot.tftfieldanalysis.services.DataRetrievalService;
 import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelTrainingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Book;
 import java.util.List;
 import java.util.Set;
 
@@ -35,6 +41,12 @@ public class ModelTrainingController {
     @Autowired
     private DataRetrievalService dataRetrievalService;
 
+    @Operation(summary = "Static asset retrieval: Get TFT Server Targets")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "none",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String[].class)) })
+    })
     @GetMapping("/serverTargets")
     public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
     getValidServerTargets()
@@ -51,6 +63,12 @@ public class ModelTrainingController {
         );
     }
 
+    @Operation(summary = "Static asset retrieval: Get RIOT Account Server Targets")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "none",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String[].class)) })
+    })
     @GetMapping("/serverLocations")
     public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
     getAllServerLocations()
@@ -67,6 +85,19 @@ public class ModelTrainingController {
         );
     }
 
+    @Operation(summary = "Cross confirmation: Validate account, returns IGN")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "IGN",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class)) }
+            ),
+            @ApiResponse(responseCode = "404", description = "Invalid account server target",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode = "400", description = "Unable to locate/access account",
+                    content = { @Content }
+            )
+    })
     @GetMapping("/validate/{ign}/server/{server}")
     public @ResponseBody ResponseEntity<DetailedResponse<String>>
     validateIGN(@PathVariable String ign, @PathVariable String server){
@@ -78,7 +109,7 @@ public class ModelTrainingController {
                             new ResponseDetails(
                                     "Invalid Server Location", "Valid location are: " + ArrayUtil.arrayJoinWith(ServerLocations.values(), ","), null
                             )
-                    ), HttpStatusCode.valueOf(400)
+                    ), HttpStatusCode.valueOf(404)
             );
         }
 
@@ -98,11 +129,33 @@ public class ModelTrainingController {
         );
     }
 
+    @Operation(summary = "Train model, response withheld until completion.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Model id",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class)) }
+            ),
+            @ApiResponse(responseCode = "404", description = "Unknown model",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode = "501", description = "Error encountered while training, details.notes contains what matchIds were evaluated",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode = "400", description = "Error encountered before training start",
+                    content = { @Content }
+            ),
+            @ApiResponse(responseCode = "400", description = "Missing PUUID query parameter",
+                    content = { @Content }
+            )
+    })
     @PostMapping("/{id}")
     public @ResponseBody
     ResponseEntity<DetailedResponse<Integer>> trainModel(
             @PathVariable int id,
-            @RequestParam(required = false) String puuid,
+            @RequestParam String puuid,
             @RequestBody(required = false) ModelTrainingService.TrainingConfiguration config
     ) {
         if(registry == null){
@@ -112,10 +165,11 @@ public class ModelTrainingController {
         if(model == null){
             return responses.getResponseOnModelNotFound(id);
         }
-        puuid = puuid == null ? "PbehKkjRrNApiTrB_Q5IH5a0EAozAHNRFdd_ObZQW1c4Pt3ZL22A-gt1kFPOaxpERXRCPSQWpy7kNQ" : puuid;
+        if(puuid == null || puuid.isEmpty()){
+            return responses.getResponseOnMissingPUUID();
+        }
+
         ValueErrorTuple<Set<String>,Exception> result = trainer.run(model, puuid, config);
-
-
         if(result.error() != null && result.value() != null){
             return new ResponseEntity<>(
                     DetailedResponse.of(
@@ -127,7 +181,7 @@ public class ModelTrainingController {
                                             ArrayUtil.arrayJoinWith(result.value().toArray(new String[0]), ", ")
                                     )
                             )
-                    ), HttpStatusCode.valueOf(500)
+                    ), HttpStatusCode.valueOf(501)
             );
         }
         if(result.error() != null){

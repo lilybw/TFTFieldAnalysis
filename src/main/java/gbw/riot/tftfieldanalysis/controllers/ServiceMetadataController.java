@@ -3,6 +3,11 @@ package gbw.riot.tftfieldanalysis.controllers;
 import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.services.WebServiceMetadataService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +22,15 @@ public class ServiceMetadataController {
     @Autowired
     private WebServiceMetadataService serviceData;
 
+    @Operation(summary = "Retrieve current web service version.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of tags sorted on how many points had that tag, in descending order.",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class)) }),
+            @ApiResponse(responseCode = "500", description = "Internal error, unable to retrieve value",
+                    content = { @Content }
+            )
+    })
     @GetMapping("/version")
     public @ResponseBody ResponseEntity<DetailedResponse<String>> getVersion()
     {
