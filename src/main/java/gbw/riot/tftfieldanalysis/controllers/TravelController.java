@@ -10,6 +10,7 @@ import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import gbw.riot.tftfieldanalysis.services.TravelContextParser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +38,9 @@ public class TravelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of options, unsorted.",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = TravelBranchOptionDTO[].class)) }),
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = TravelBranchOptionDTO.class))
+                    ) }),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing",
                     content = { @Content }
             ),
@@ -69,8 +72,9 @@ public class TravelController {
     @Operation(summary = "Retrieves the full travel context data.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Each entry contains a list of branch options, where the first option is the \"branch origin point\"",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = TravelBranchOptionDTO[][].class)) }),
+                    content = { @Content(mediaType = "application/json")
+            //TODO OAS NESTED ARRAY ISSUE
+            }),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing",
                     content = { @Content }
             ),

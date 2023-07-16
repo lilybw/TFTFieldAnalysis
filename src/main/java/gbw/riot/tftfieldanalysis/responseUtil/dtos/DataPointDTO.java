@@ -15,20 +15,21 @@ public record DataPointDTO(int id, String namespace, List<String> tags) {
                 dictionary.translateAll(point.getTags())
         );
     }
-    public static Set<DataPointDTO> of(Set<DataPoint> set, DataModel model){
-        Set<DataPointDTO> toReturn = new HashSet<>();
-        for(DataPoint p : set){
+    public static List<DataPointDTO> of(Collection<DataPoint> collection, DataModel model){
+        List<DataPointDTO> toReturn = new ArrayList<>();
+        for(DataPoint p : collection){
             toReturn.add(of(p,model));
         }
         return toReturn;
     }
-    public static <T> Map<T, Set<DataPointDTO>> of(Map<T, Set<DataPoint>> map, DataModel model){
-        Map<T,Set<DataPointDTO>> toReturn = new HashMap<>();
+
+    public static <T> Map<T, List<DataPointDTO>> of(Map<T, List<DataPoint>> map, DataModel model){
+        Map<T,List<DataPointDTO>> toReturn = new HashMap<>();
         for(T key : map.keySet()){
             toReturn.put(
                     key,
                     of(map.get(key),model)
-                    );
+            );
         }
         return toReturn;
     }

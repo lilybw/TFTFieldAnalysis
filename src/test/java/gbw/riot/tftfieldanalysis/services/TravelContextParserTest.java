@@ -29,6 +29,7 @@ class TravelContextParserTest {
 
     @Test
     void parseParam() {
+        System.out.println("\t ---Testing: parseParam");
         System.out.println("\t\t ---static, expect no error");
         String shouldWorkParam1 = sub+sub+sub+" "+end;
         String shouldWorkParam2 = "1"+sub+" 1"+sub+"1"+sub+"1"+end;

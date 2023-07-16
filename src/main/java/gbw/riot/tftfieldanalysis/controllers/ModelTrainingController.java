@@ -152,8 +152,7 @@ public class ModelTrainingController {
             )
     })
     @PostMapping("/{id}")
-    public @ResponseBody
-    ResponseEntity<DetailedResponse<Integer>> trainModel(
+    public @ResponseBody ResponseEntity<DetailedResponse<Integer>> trainModel(
             @PathVariable int id,
             @RequestParam String puuid,
             @RequestBody(required = false) ModelTrainingService.TrainingConfiguration config

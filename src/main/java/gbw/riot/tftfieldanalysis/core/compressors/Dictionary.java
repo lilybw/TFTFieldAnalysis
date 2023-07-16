@@ -104,6 +104,7 @@ public class Dictionary<T> {
         }
         return toReturn;
     }
+
     public <M> Map<Integer,M> compress(Map<T,M> map){
         Map<Integer,M> toReturn = new HashMap<>();
         for(T key : map.keySet()){

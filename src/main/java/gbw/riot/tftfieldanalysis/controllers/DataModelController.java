@@ -12,11 +12,15 @@ import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelMetaDataDTO;
 import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
+
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -70,13 +74,15 @@ public class DataModelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Integer[].class)) }),
+                            array = @ArraySchema(schema = @Schema(implementation = int.class)
+                            )
+                    ) }),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing",
                     content = { @Content }
             )
     })
     @GetMapping("/all")
-    public @ResponseBody ResponseEntity<DetailedResponse<Set<Integer>>> getAllModelIds()
+    public @ResponseBody ResponseEntity<DetailedResponse<List<Integer>>> getAllModelIds()
     {
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
@@ -84,7 +90,7 @@ public class DataModelController {
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        registry.getModelIds()
+                        registry.getModelIds().stream().toList()
                 ),
                 HttpStatusCode.valueOf(200)
         );
@@ -146,7 +152,8 @@ public class DataModelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DataPointDTO[].class)) }),
+                            array = @ArraySchema(schema = @Schema(implementation = DataPointDTO.class))
+                    ) }),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing",
                     content = { @Content }
             ),
@@ -159,7 +166,7 @@ public class DataModelController {
             })
     })
     @GetMapping("/{id}/points")
-    public @ResponseBody ResponseEntity<DetailedResponse<Set<DataPointDTO>>> getPoints(
+    public @ResponseBody ResponseEntity<DetailedResponse<List<DataPointDTO>>> getPoints(
             @PathVariable int id,
             @RequestParam(required = false) String namespace,
             @RequestParam(required = false) int[] pointIds,
@@ -255,7 +262,8 @@ public class DataModelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String[].class)) }),
+                            array = @ArraySchema(schema = @Schema(implementation = String.class))
+                    ) }),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing",
                     content = { @Content }
             ),
@@ -284,25 +292,41 @@ public class DataModelController {
 
     @Operation(summary = "Query edges for points, resulting edge lists are sorted based on occurrence value in descending order")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Map of each point id provided as key and with a list of its edges as value",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Map.class)) }),
-            @ApiResponse(responseCode = "206", description = "Partial success",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Map.class)) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Map of each point id provided as key and with a list of its edges as value",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json"
+                                    //TODO OAS ISSUE HERE GENERIC TYPES
+                            )
+                    }
             ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
+            @ApiResponse(
+                    responseCode = "206",
+                    description = "Partial success",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = Map.class)
+                            )
+                    }
             ),
-            @ApiResponse(responseCode = "404", description = "No point ids provided",
-                    content = { @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = DetailedResponse.class)) }
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal model registry missing"
             ),
-            @ApiResponse(responseCode = "400", description = "No such points in model",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DetailedResponse.class)) }
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No such model"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No point ids provided"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "No such points in model"
             )
     })
     @GetMapping("/{id}/edges")
@@ -351,7 +375,7 @@ public class DataModelController {
             );
         }
 
-        Map<Integer, Set<EdgeDTO>> edges = EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist));
+        Map<Integer, List<EdgeDTO>> edges = EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist));
         Map<Integer, List<EdgeDTO>> sortedEdges = new HashMap<>();
         for(int key : edges.keySet()){
             List<EdgeDTO> asList = new ArrayList<>(edges.get(key));
@@ -444,11 +468,9 @@ public class DataModelController {
                 .map(Map.Entry::getKey).toList();
 
         List<String> translatedSortedTags = new ArrayList<>();
-        sortedTags.forEach(tagAsInt -> {
-            translatedSortedTags.add(
-                    metadata.dictionary().translate(tagAsInt)
-            );
-        });
+        sortedTags.forEach(tagAsInt -> translatedSortedTags.add(
+                metadata.dictionary().translate(tagAsInt)
+        ));
 
         return new ResponseEntity<>(
                 DetailedResponse.success(
