@@ -22,11 +22,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.print.Book;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/train")
+@RequestMapping(value = "/api/v1/train", produces = "application/json")
 public class ModelTrainingController {
 
     @Autowired
@@ -46,17 +47,17 @@ public class ModelTrainingController {
             @ApiResponse(responseCode = "200", description = "String array of valid TFT servers.")
     })
     @GetMapping("/serverTargets")
-    public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
-    getValidServerTargets()
+    public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
+    getValidTFTServerTargets()
     {
         ModelTrainingService.TrainingConfiguration.ServerTargets[] values = ArrayUtil.removeTail(ModelTrainingService.TrainingConfiguration.ServerTargets.values(),1);
-        String[] asStringArray = new String[values.length];
-        for(int i = 0; i < values.length; i++){
-            asStringArray[i] = values[i].target;
+        List<String> asStringList = new ArrayList<>(values.length);
+        for(ModelTrainingService.TrainingConfiguration.ServerTargets value : values){
+            asStringList.add(value.target);
         }
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        asStringArray
+                        asStringList
                 ), HttpStatusCode.valueOf(200)
         );
     }
@@ -66,17 +67,17 @@ public class ModelTrainingController {
             @ApiResponse(responseCode = "200", description = "String array of valid account servers.")
     })
     @GetMapping("/serverLocations")
-    public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
-    getAllServerLocations()
+    public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
+    getAccountServerLocations()
     {
         ServerLocations[] values = ArrayUtil.removeTail(ServerLocations.values(),1);
-        String[] asStringArray = new String[values.length];
-        for(int i = 0; i < values.length; i++){
-            asStringArray[i] = values[i].domain;
+        List<String> asStringList = new ArrayList<>(values.length);
+        for(ServerLocations value : values){
+            asStringList.add(value.domain);
         }
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        asStringArray
+                        asStringList
                 ), HttpStatusCode.valueOf(200)
         );
     }
@@ -89,7 +90,7 @@ public class ModelTrainingController {
     })
     @GetMapping("/validate/{ign}/server/{server}")
     public @ResponseBody ResponseEntity<DetailedResponse<String>>
-    validateIGN(@PathVariable String ign, @PathVariable String server){
+    validatePlayerIGN(@PathVariable String ign, @PathVariable String server){
         ServerLocations location = ServerLocations.byDomain(server);
 
         if(location == ServerLocations.ERR_UNKNOWN){

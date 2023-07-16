@@ -17,7 +17,7 @@ import java.util.Map;
  * Any type shall be referred to as its complex version (if applicable) <br>
  * Each type is written in order of nesting: Ta<\Na<\Ka<\Va>>>> => TaNaKaVa <br>
  * Any singular type is prefixed with DR (DetailedResponse): String => DRString <br>
- * Multi-dimensional arrays indicate dimension size as suffix: String[][] => Array2DString <br>
+ * Multi-dimensional collections indicate dimension size as suffix: String[][] => Array2DString <br>
  */
 @Configuration
 public class COASConfig {
@@ -31,20 +31,11 @@ public class COASConfig {
     @Schema(description = "Detailed response with a list of strings.")
     public static class ListString extends DetailedResponse<List<String>>{}
 
-    @Schema(description = "Detailed response with an array of strings.")
-    public static class ArrayString extends DetailedResponse<String[]>{}
-
     @Schema(description = "Detailed response with a list of EdgeDTO objects.")
     public static class ListEdgeDTO extends DetailedResponse<List<EdgeDTO>>{}
 
     @Schema(description = "Detailed response with a list of EdgeDTO objects.")
-    public static class ArrayEdgeDTO extends DetailedResponse<EdgeDTO[]>{}
-
-    @Schema(description = "Detailed response with a list of EdgeDTO objects.")
     public static class ListDataPointDTO extends DetailedResponse<List<DataPointDTO>>{}
-
-    @Schema(description = "Detailed response with an array of EdgeDTO objects.")
-    public static class ArrayDataPointDTO extends DetailedResponse<DataPointDTO[]>{}
 
     @Schema(description = "Detailed response with a ModelDTO object.")
     public static class DRModelDTO extends DetailedResponse<ModelDTO>{}
@@ -62,10 +53,10 @@ public class COASConfig {
     public static class DRInteger extends DetailedResponse<Integer>{}
 
     @Schema(description = "Detailed response of an array of travel branch options.")
-    public static class ArrayTravelBranchOptionDTO extends DetailedResponse<TravelBranchOptionDTO[]>{}
+    public static class ListTravelBranchOptionDTO extends DetailedResponse<List<TravelBranchOptionDTO>>{}
 
     @Schema(description = "Detailed response of a 2D array of travel branch options.")
-    public static class Array2DTravelBranchOptionDTO extends DetailedResponse<TravelBranchOptionDTO[][]>{}
+    public static class List2DTravelBranchOptionDTO extends DetailedResponse<List<List<TravelBranchOptionDTO>>>{}
 
     @Schema(description = "Detailed response of the travel context syntax declaration.")
     public static class DRTravelContextSyntaxDeclaration extends DetailedResponse<TravelContextSyntaxDeclaration>{}

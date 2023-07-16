@@ -2,10 +2,12 @@ package gbw.riot.tftfieldanalysis.responseUtil.dtos;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 import java.util.Map;
 
+@Schema(name = "ModelMetaDataDTO")
 public record ModelMetaDataDTO(
         int modelId,
         List<String> matchIdsEvaluated,

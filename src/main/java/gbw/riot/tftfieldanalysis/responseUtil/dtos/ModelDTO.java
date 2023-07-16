@@ -4,10 +4,12 @@ import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
 import gbw.riot.tftfieldanalysis.responseUtil.MapUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 import java.util.Map;
 
+@Schema(name = "ModelDTO")
 public record ModelDTO(
         ModelMetaDataDTO metadata,
         List<String> namespaces,

@@ -1,6 +1,5 @@
 package gbw.riot.tftfieldanalysis.controllers;
 
-import gbw.riot.tftfieldanalysis.configurations.COASConfig;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
@@ -15,9 +14,6 @@ import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.Content;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -31,7 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/model")
+@RequestMapping(value = "/api/v1/model", produces = "application/json")
 public class DataModelController {
 
     @Autowired
@@ -46,16 +42,16 @@ public class DataModelController {
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
             @ApiResponse(responseCode = "404", description = "No such model")
     })
-    @GetMapping("/{id}")
-    public @ResponseBody ResponseEntity<DetailedResponse<ModelDTO>> getModel(@PathVariable int id)
+    @GetMapping("/{modelId}")
+    public @ResponseBody ResponseEntity<DetailedResponse<ModelDTO>> getModel(@PathVariable int modelId)
     {
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
 
-        DataModel modelFound = registry.retrieveModel(id);
+        DataModel modelFound = registry.retrieveModel(modelId);
         if(modelFound == null){
-            return responses.getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(modelId);
         }
 
         return new ResponseEntity<>(
@@ -71,7 +67,7 @@ public class DataModelController {
             @ApiResponse(responseCode = "500", description = "Internal model registry missing")
     })
     @GetMapping("/all")
-    public @ResponseBody ResponseEntity<DetailedResponse<List<Integer>>> getAllModelIds()
+    public @ResponseBody ResponseEntity<DetailedResponse<List<Integer>>> getAllModels()
     {
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
@@ -108,25 +104,25 @@ public class DataModelController {
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
             @ApiResponse(responseCode = "404", description = "No such model")
     })
-    @PostMapping("/{id}/delete")
-    public @ResponseBody ResponseEntity<DetailedResponse<String>> deleteModel(@PathVariable int id){
+    @PostMapping("/{modelId}/delete")
+    public @ResponseBody ResponseEntity<DetailedResponse<String>> deleteModel(@PathVariable int modelId){
         if(registry == null) {
             return responses.getResponseOnRegistryMissing();
         }
 
-        if(registry.retrieveModel(id) == null){
-            return responses.getResponseOnModelNotFound(id);
+        if(registry.retrieveModel(modelId) == null){
+            return responses.getResponseOnModelNotFound(modelId);
         }
 
-        if(registry.deleteModel(id)){
+        if(registry.deleteModel(modelId)){
             return new ResponseEntity<>(
                     DetailedResponse.details(
-                            new ResponseDetails("Successfully Deleted Model id: " + id, "", null)
+                            new ResponseDetails("Successfully Deleted Model id: " + modelId, "", null)
 
                     ), HttpStatusCode.valueOf(200)
             );
         }
-        return responses.getResponseOnModelNotFound(id);
+        return responses.getResponseOnModelNotFound(modelId);
     }
 
     @Operation(summary = "Query model DataPoints which conforms to provided parameters.")
@@ -136,9 +132,9 @@ public class DataModelController {
             @ApiResponse(responseCode = "404", description = "No such model"),
             @ApiResponse(responseCode = "418", description = "Api usage error.")
     })
-    @GetMapping("/{id}/points")
-    public @ResponseBody ResponseEntity<DetailedResponse<List<DataPointDTO>>> getPoints(
-            @PathVariable int id,
+    @GetMapping("/{modelId}/points")
+    public @ResponseBody ResponseEntity<DetailedResponse<List<DataPointDTO>>> getPointsInModel(
+            @PathVariable int modelId,
             @RequestParam(required = false) String namespace,
             @RequestParam(required = false) int[] pointIds,
             @RequestParam(required = false) String[] tags
@@ -146,9 +142,9 @@ public class DataModelController {
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
-        DataModel model = registry.retrieveModel(id);
+        DataModel model = registry.retrieveModel(modelId);
         if(model == null){
-            return responses.getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(modelId);
         }
 
         int computedResolution = 0;
@@ -235,16 +231,16 @@ public class DataModelController {
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
             @ApiResponse(responseCode = "404", description = "No such model")
     })
-    @GetMapping("/{id}/namespaces")
+    @GetMapping("/{modelId}/namespaces")
     public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
-    getNamespaces(@PathVariable int id){
+    getNamespacesOfModel(@PathVariable int modelId){
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
 
-        DataModel model = registry.retrieveModel(id);
+        DataModel model = registry.retrieveModel(modelId);
         if(model == null){
-            return responses.getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(modelId);
         }
 
         return new ResponseEntity<>(
@@ -263,18 +259,18 @@ public class DataModelController {
             @ApiResponse(responseCode = "404", description = "No point ids provided"),
             @ApiResponse(responseCode = "400", description = "No such points in model")
     })
-    @GetMapping("/{id}/edges")
+    @GetMapping("/{modelId}/edges")
     public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, List<EdgeDTO>>>>
-    getEdgeSets(
-            @RequestParam int[] points, @PathVariable int id
+    getEdgeSetForPoints(
+            @RequestParam int[] points, @PathVariable int modelId
     ){
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
 
-        DataModel model = registry.retrieveModel(id);
+        DataModel model = registry.retrieveModel(modelId);
         if(model == null){
-            return responses.getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(modelId);
         }
 
         if(points == null || points.length == 0){
@@ -345,16 +341,16 @@ public class DataModelController {
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
             @ApiResponse(responseCode = "404", description = "No such model")
     })
-    @GetMapping("/{id}/metadata")
+    @GetMapping("/{modelId}/metadata")
     public @ResponseBody ResponseEntity<DetailedResponse<ModelMetaDataDTO>>
-    getModelMetadata(@PathVariable int id){
+    getMetadataOfModel(@PathVariable int modelId){
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
 
-        DataModel model = registry.retrieveModel(id);
+        DataModel model = registry.retrieveModel(modelId);
         if(model == null){
-            return responses.getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(modelId);
         }
 
         return new ResponseEntity<>(
@@ -370,16 +366,16 @@ public class DataModelController {
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
             @ApiResponse(responseCode = "404", description = "No such model")
     })
-    @GetMapping("/{id}/tags")
+    @GetMapping("/{modelId}/tags")
     public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
-    getModelTags(@PathVariable int id)
+    getTagsInModel(@PathVariable int modelId)
     {
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
-        DataModel model = registry.retrieveModel(id);
+        DataModel model = registry.retrieveModel(modelId);
         if(model == null){
-            return responses.getResponseOnModelNotFound(id);
+            return responses.getResponseOnModelNotFound(modelId);
         }
 
         DataModel.ModelMetaData metadata = model.getMetaData();

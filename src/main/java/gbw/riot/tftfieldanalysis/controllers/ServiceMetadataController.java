@@ -27,7 +27,7 @@ public class ServiceMetadataController {
             @ApiResponse(responseCode = "500", description = "Internal error, unable to retrieve value.")
     })
     @GetMapping("/version")
-    public @ResponseBody ResponseEntity<DetailedResponse<String>> getVersion()
+    public @ResponseBody ResponseEntity<DetailedResponse<String>> getServiceVersion()
     {
         ValueErrorTuple<String,Exception> result = serviceData.getVersion();
         if(result.error() != null){
@@ -45,11 +45,11 @@ public class ServiceMetadataController {
     }
 
     @GetMapping("/")
-    public @ResponseBody ResponseEntity<DetailedResponse<String>> hello()
+    public @ResponseBody ResponseEntity<DetailedResponse<String>> pingService()
     {
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        "You've reached the backend for TFTFA"
+                        "pong"
                 ), HttpStatusCode.valueOf(200)
         );
     }

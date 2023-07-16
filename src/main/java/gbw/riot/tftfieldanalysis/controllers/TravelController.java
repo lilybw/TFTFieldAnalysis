@@ -20,10 +20,11 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/v1/travel")
+@RequestMapping(value = "/api/v1/travel", produces = "application/json")
 public class TravelController {
-    //asset "streaming" yay!
 
     @Autowired
     private ModelRegistryService registry;
@@ -41,8 +42,8 @@ public class TravelController {
             @ApiResponse(responseCode = "404", description = "No such model")
     })
     @GetMapping("/{modelId}/next")
-    public @ResponseBody ResponseEntity<DetailedResponse<TravelBranchOptionDTO[]>>
-    travelModel(@PathVariable int modelId, @RequestParam String context)
+    public @ResponseBody ResponseEntity<DetailedResponse<List<TravelBranchOptionDTO>>>
+    getBranchOptionsForStep(@PathVariable int modelId, @RequestParam String context)
     {
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
@@ -69,7 +70,7 @@ public class TravelController {
             @ApiResponse(responseCode="400", description = "Invalid context")
     })
     @GetMapping("/{modelId}/full")
-    public @ResponseBody ResponseEntity<DetailedResponse<TravelBranchOptionDTO[][]>>
+    public @ResponseBody ResponseEntity<DetailedResponse<List<List<TravelBranchOptionDTO>>>>
     getFullTravelPath(@PathVariable int modelId, @RequestParam String context){
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
@@ -92,7 +93,7 @@ public class TravelController {
     })
     @GetMapping("/contextSyntaxDeclaration")
     public @ResponseBody ResponseEntity<DetailedResponse<TravelContextSyntaxDeclaration>>
-    getSyntaxDeclaration(){
+    getTravelContextSyntaxDeclaration(){
         return new ResponseEntity<>(
                 DetailedResponse.success(
                     new TravelContextSyntaxDeclaration(
