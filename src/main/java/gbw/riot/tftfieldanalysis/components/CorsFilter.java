@@ -1,4 +1,4 @@
-package gbw.riot.tftfieldanalysis;
+package gbw.riot.tftfieldanalysis.components;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

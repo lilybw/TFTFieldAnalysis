@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,12 +23,8 @@ public class ServiceMetadataController {
 
     @Operation(summary = "Retrieve current web service version.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of tags sorted on how many points had that tag, in descending order.",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String.class)) }),
-            @ApiResponse(responseCode = "500", description = "Internal error, unable to retrieve value",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Web service version."),
+            @ApiResponse(responseCode = "500", description = "Internal error, unable to retrieve value.")
     })
     @GetMapping("/version")
     public @ResponseBody ResponseEntity<DetailedResponse<String>> getVersion()

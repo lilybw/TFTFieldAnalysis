@@ -1,5 +1,6 @@
 package gbw.riot.tftfieldanalysis.controllers;
 
+import gbw.riot.tftfieldanalysis.configurations.COASConfig;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
@@ -41,15 +42,9 @@ public class DataModelController {
 
     @Operation(summary = "Retrieves ALL data associated with a given model. Do not automate. Only retrieve the data from a model you need.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ModelDTO.class)) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model")
     })
     @GetMapping("/{id}")
     public @ResponseBody ResponseEntity<DetailedResponse<ModelDTO>> getModel(@PathVariable int id)
@@ -72,14 +67,8 @@ public class DataModelController {
 
     @Operation(summary = "Retrieves all model ids currently in registry.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success",
-                    content = { @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = int.class)
-                            )
-                    ) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing")
     })
     @GetMapping("/all")
     public @ResponseBody ResponseEntity<DetailedResponse<List<Integer>>> getAllModelIds()
@@ -98,9 +87,7 @@ public class DataModelController {
 
     @Operation(summary = "Create a new empty model")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ModelDTO.class)) })
+            @ApiResponse(responseCode = "200", description = "Success")
     })
     @PostMapping("/create")
     public @ResponseBody ResponseEntity<DetailedResponse<ModelDTO>> createModel()
@@ -117,15 +104,9 @@ public class DataModelController {
 
     @Operation(summary = "Remove model permanently.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DetailedResponse.class)) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model")
     })
     @PostMapping("/{id}/delete")
     public @ResponseBody ResponseEntity<DetailedResponse<String>> deleteModel(@PathVariable int id){
@@ -150,20 +131,10 @@ public class DataModelController {
 
     @Operation(summary = "Query model DataPoints which conforms to provided parameters.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success",
-                    content = { @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = DataPointDTO.class))
-                    ) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "418", description = "Api usage error.",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DetailedResponse.class))
-            })
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model"),
+            @ApiResponse(responseCode = "418", description = "Api usage error.")
     })
     @GetMapping("/{id}/points")
     public @ResponseBody ResponseEntity<DetailedResponse<List<DataPointDTO>>> getPoints(
@@ -260,16 +231,9 @@ public class DataModelController {
 
     @Operation(summary = "Retrieves all namespaces in model")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success",
-                    content = { @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = String.class))
-                    ) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model")
     })
     @GetMapping("/{id}/namespaces")
     public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
@@ -292,42 +256,12 @@ public class DataModelController {
 
     @Operation(summary = "Query edges for points, resulting edge lists are sorted based on occurrence value in descending order")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Map of each point id provided as key and with a list of its edges as value",
-                    content = {
-                            @Content(
-                                    mediaType = "application/json"
-                                    //TODO OAS ISSUE HERE GENERIC TYPES
-                            )
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "206",
-                    description = "Partial success",
-                    content = {
-                            @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = Map.class)
-                            )
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal model registry missing"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "No such model"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "No point ids provided"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "No such points in model"
-            )
+            @ApiResponse(responseCode = "200", description = "Map of each point id provided as key and with a list of its edges as value"),
+            @ApiResponse(responseCode = "206", description = "Partial success"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model"),
+            @ApiResponse(responseCode = "404", description = "No point ids provided"),
+            @ApiResponse(responseCode = "400", description = "No such points in model")
     })
     @GetMapping("/{id}/edges")
     public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, List<EdgeDTO>>>>
@@ -407,15 +341,9 @@ public class DataModelController {
 
     @Operation(summary = "Get metadata for model")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Model metadata",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ModelMetaDataDTO.class)) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Model metadata"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model")
     })
     @GetMapping("/{id}/metadata")
     public @ResponseBody ResponseEntity<DetailedResponse<ModelMetaDataDTO>>
@@ -438,15 +366,9 @@ public class DataModelController {
 
     @Operation(summary = "Retrives all tags for all points in model.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of tags sorted on how many points had that tag, in descending order.",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String[].class)) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "List of tags sorted on how many points had that tag, in descending order."),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model")
     })
     @GetMapping("/{id}/tags")
     public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>

@@ -1,20 +1,25 @@
 package gbw.riot.tftfieldanalysis.responseUtil;
 
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.DataPointDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
+@Schema(description = "Base generic detailed response.")
 public class DetailedResponse<T> {
-
-    public T response;
+    @Schema(description = "Response data.")
+    public T data;
+    @Schema(description = "Response details.")
     public ResponseDetails details;
 
+    public DetailedResponse(){}
+
     public DetailedResponse(T response, ResponseDetails details){
-        this.response = response;
+        this.data = response;
         this.details = details;
     }
 
-    public T response(){ return response; }
+    public T response(){ return data; }
     public ResponseDetails details(){ return details; }
 
     public static <T> DetailedResponse<T> details(ResponseDetails details){

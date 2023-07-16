@@ -43,9 +43,7 @@ public class ModelTrainingController {
 
     @Operation(summary = "Static asset retrieval: Get TFT Server Targets")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "none",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String[].class)) })
+            @ApiResponse(responseCode = "200", description = "String array of valid TFT servers.")
     })
     @GetMapping("/serverTargets")
     public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
@@ -65,9 +63,7 @@ public class ModelTrainingController {
 
     @Operation(summary = "Static asset retrieval: Get RIOT Account Server Targets")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "none",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String[].class)) })
+            @ApiResponse(responseCode = "200", description = "String array of valid account servers.")
     })
     @GetMapping("/serverLocations")
     public @ResponseBody ResponseEntity<DetailedResponse<String[]>>
@@ -85,18 +81,11 @@ public class ModelTrainingController {
         );
     }
 
-    @Operation(summary = "Cross confirmation: Validate account, returns IGN")
+    @Operation(summary = "Cross confirmation: Validate account, returns player puuid")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "IGN",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = String.class)) }
-            ),
-            @ApiResponse(responseCode = "404", description = "Invalid account server target",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "400", description = "Unable to locate/access account",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Player puuid"),
+            @ApiResponse(responseCode = "404", description = "Invalid account server target"),
+            @ApiResponse(responseCode = "400", description = "Unable to locate/access account")
     })
     @GetMapping("/validate/{ign}/server/{server}")
     public @ResponseBody ResponseEntity<DetailedResponse<String>>
@@ -131,25 +120,12 @@ public class ModelTrainingController {
 
     @Operation(summary = "Train model, response withheld until completion.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Model id",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Integer.class)) }
-            ),
-            @ApiResponse(responseCode = "404", description = "Unknown model",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "501", description = "Error encountered while training, details.notes contains what matchIds were evaluated",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "400", description = "Error encountered before training start",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "400", description = "Missing PUUID query parameter",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "Model id"),
+            @ApiResponse(responseCode = "404", description = "Unknown model"),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "501", description = "Error encountered while training, details.notes contains what matchIds were evaluated"),
+            @ApiResponse(responseCode = "400", description = "Error encountered before training start"),
+            @ApiResponse(responseCode = "400", description = "Missing PUUID query parameter")
     })
     @PostMapping("/{id}")
     public @ResponseBody ResponseEntity<DetailedResponse<Integer>> trainModel(

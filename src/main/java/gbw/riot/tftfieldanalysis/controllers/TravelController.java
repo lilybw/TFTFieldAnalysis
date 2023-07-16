@@ -36,17 +36,9 @@ public class TravelController {
 
     @Operation(summary = "Retrieves next options for the current travel context")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of options, unsorted.",
-                    content = { @Content(mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = TravelBranchOptionDTO.class))
-                    ) }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            )
+            @ApiResponse(responseCode = "200", description = "List of options, unsorted."),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model")
     })
     @GetMapping("/{modelId}/next")
     public @ResponseBody ResponseEntity<DetailedResponse<TravelBranchOptionDTO[]>>
@@ -71,20 +63,10 @@ public class TravelController {
 
     @Operation(summary = "Retrieves the full travel context data.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Each entry contains a list of branch options, where the first option is the \"branch origin point\"",
-                    content = { @Content(mediaType = "application/json")
-            //TODO OAS NESTED ARRAY ISSUE
-            }),
-            @ApiResponse(responseCode = "500", description = "Internal model registry missing",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode = "404", description = "No such model",
-                    content = { @Content }
-            ),
-            @ApiResponse(responseCode="400", description = "Invalid context",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DetailedResponse.class)
-                    )}
-            )
+            @ApiResponse(responseCode = "200", description = "Each entry contains a list of branch options, where the first option is the \"branch origin point\""),
+            @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
+            @ApiResponse(responseCode = "404", description = "No such model"),
+            @ApiResponse(responseCode="400", description = "Invalid context")
     })
     @GetMapping("/{modelId}/full")
     public @ResponseBody ResponseEntity<DetailedResponse<TravelBranchOptionDTO[][]>>
@@ -106,9 +88,7 @@ public class TravelController {
 
     @Operation(summary = "Retrieves documentation regarding the whole Travel Context ordeal.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of options, unsorted.",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = TravelContextSyntaxDeclaration.class)) })
+            @ApiResponse(responseCode = "200", description = "List of options, unsorted.")
     })
     @GetMapping("/contextSyntaxDeclaration")
     public @ResponseBody ResponseEntity<DetailedResponse<TravelContextSyntaxDeclaration>>
