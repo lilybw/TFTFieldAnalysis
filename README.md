@@ -12,7 +12,7 @@ Packages of note:
 3. "gbw.riot.tftfieldanalysis.core": Contains most type declarations alongside the declarations for DataModel and such.
 4. "gbw.riot.tftfieldanalysis.responseUtil.dtos": Contains the data transfer type declarations alongside the functionality required to convert from internal type to external.
 
-Further API documentation can be accessed when running through open-api at "localhost:13498/api-docs". The corresponding swagger ui can be found at "localhost:13498/swagger-ui/index.html"
+Further API documentation can be accessed when running through open-api at "localhost:13498/v3/api-docs". The corresponding swagger ui can be found at "localhost:13498/swagger-ui/index.html"
 
 #### Local Deployment
 

@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "integration-gen": "rmdir /s /q src\\generated-sources\\openapi && openapi-generator-cli generate -i ./backend-api-docs.json -o src/generated-sources/openapi -g typescript-fetch --additional-properties=supportsES6=true"
+    "integration-gen": "rmdir /s /q src\\generated-sources\\openapi && openapi-generator-cli generate -i ../documentation/oas3/backend-api-docs.json -o src/generated-sources/openapi -g typescript-fetch --additional-properties=supportsES6=true"
   },
   "dependencies": {
     "localforage": "^1.10.0",
