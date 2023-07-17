@@ -1,5 +1,7 @@
 package gbw.riot.tftfieldanalysis.core.travel;
 
+import java.util.Map;
+
 /**
  * On null member, assume all is included
  * @param start int | null, id of branch origin point
@@ -8,7 +10,9 @@ package gbw.riot.tftfieldanalysis.core.travel;
  * @param pointIds int[] | null
  */
 public record BranchEntry(
-        int start, String[] includedNamespaces, String[] includedTags, int[] pointIds) {
+        int start, Map<String,Range> includedNamespaces, Map<String,Range> includedTags, int[] pointIds) {
+
+    //global occurrenceRanges makes little sense. Map<namespace | tag , some-range-type> would be a solution
 
     //traverse context: array of all former branch points for current point
     //context should accommodate culling on any of: "namespace", "tag", "ids"
