@@ -1,11 +1,16 @@
 package gbw.riot.tftfieldanalysis.configurations;
 
+import gbw.riot.tftfieldanalysis.TftFieldAnalysisApplication;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
-import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.*;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.context.annotation.Configuration;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
 
@@ -60,4 +65,6 @@ public class COASConfig {
 
     @Schema(description = "Detailed response of the travel context syntax declaration.")
     public static class DRTravelContextSyntaxDeclaration extends DetailedResponse<TravelContextSyntaxDeclaration>{}
+
+
 }

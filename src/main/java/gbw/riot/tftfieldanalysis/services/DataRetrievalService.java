@@ -116,8 +116,6 @@ public class DataRetrievalService {
 
     public ValueErrorTuple<Set<String>,Exception> start(ModelTrainingService.TrainingConfiguration config, String basePlayerPUUID, MatchParser forEachMatch, Set<String> excludedMatches){
         HashSet<String> playersParsed = new HashSet<>();
-        MatchData[] dataPool = new MatchData[config.maxMatchCount];
-        Thread[] threadPool = new Thread[config.maxMatchCount];
         //Algorithm structure:
         //  first, retrieve all match ids for players
         //  second, spin out to load the data for each match id

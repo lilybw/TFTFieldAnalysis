@@ -256,7 +256,7 @@ public class DataModelController {
             @ApiResponse(responseCode = "206", description = "Partial success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
             @ApiResponse(responseCode = "404", description = "No such model"),
-            @ApiResponse(responseCode = "404", description = "No point ids provided"),
+            @ApiResponse(responseCode = "400", description = "No point ids provided"),
             @ApiResponse(responseCode = "400", description = "No such points in model")
     })
     @GetMapping("/{modelId}/edges")
@@ -281,7 +281,7 @@ public class DataModelController {
                                     "Please provide valid point ids as query parameter \"...url...?points=x,y,z\"",
                                     null
                             )
-                    ), HttpStatusCode.valueOf(404)
+                    ), HttpStatusCode.valueOf(400)
             );
         }
 

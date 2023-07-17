@@ -7,9 +7,12 @@ import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class ModelTrainingService {
@@ -18,51 +21,37 @@ public class ModelTrainingService {
         boolean eval(MatchData match);
     }
 
-    public static class TrainingConfiguration{
-
-        public enum ServerTargets{
-            EUROPE("europe"), AMERICA("america"), ASIA("asia"), SEA("sea"), ERR_UNKNOWN("unknown");
-            public final String target;
-            ServerTargets(String target){
-                this.target = target;
-            }
-            public static ServerTargets of(String string){
-                for(ServerTargets target : ServerTargets.values()){
-                    if(target.target.equalsIgnoreCase(string)){
-                        return target;
-                    }
-                }
-                return ServerTargets.ERR_UNKNOWN;
-            }
+    public enum ServerTargets{
+        EUROPE("europe"), AMERICA("america"), ASIA("asia"), SEA("sea"), ERR_UNKNOWN("unknown");
+        public final String target;
+        ServerTargets(String target){
+            this.target = target;
         }
+        public static ServerTargets of(String string){
+            for(ServerTargets target : ServerTargets.values()){
+                if(target.target.equalsIgnoreCase(string)){
+                    return target;
+                }
+            }
+            return ServerTargets.ERR_UNKNOWN;
+        }
+    }
 
+    public static class TrainingConfiguration{
         public int maxMatchCount = 10;
         public String patch = null;
         public boolean confineToBasePlayer = false;
         public ServerTargets serverTarget = ServerTargets.EUROPE;
-        public TrainingConfiguration(){}
-        public TrainingConfiguration(int maxMatchCount){
-            this.maxMatchCount = maxMatchCount;
-        }
-        public TrainingConfiguration(String patch){
-            this.patch = patch;
-        }
-        public TrainingConfiguration(int maxMatchCount, String patch){
-            this.patch = patch;
-            this.maxMatchCount = maxMatchCount == 0 ? 10 : maxMatchCount;
-        }
-        public TrainingConfiguration(int maxMatchCount, String patch, boolean confineToBasePlayer){
-            this.patch = patch;
-            this.maxMatchCount = maxMatchCount == 0 ? 10 : maxMatchCount;
-            this.confineToBasePlayer = confineToBasePlayer;
-        }
-        public TrainingConfiguration(int maxMatchCount, String patch, boolean confineToBasePlayer, String serverTarget){
-            this.patch = patch;
-            this.maxMatchCount = maxMatchCount == 0 ? 10 : maxMatchCount;
-            this.confineToBasePlayer = confineToBasePlayer;
-            this.serverTarget = ServerTargets.of(serverTarget);
-        }
     }
+
+    public static class TrainingRegistration{
+        public DataModel model;
+        public long timeStart;
+        public double progress;
+        public TrainingConfiguration configuration;
+    }
+
+    private final ConcurrentMap<Integer,TrainingRegistration> modelsInTraining = new ConcurrentReferenceHashMap<>();
 
     @Autowired
     private DataRetrievalService retrievalService;
@@ -118,8 +107,8 @@ public class ModelTrainingService {
         if(config == null){
             return new Exception("Missing config, a config can be empty, but must be included");
         }
-        if(config.serverTarget == TrainingConfiguration.ServerTargets.ERR_UNKNOWN){
-            return new Exception("Invalid server target. Valid ones are: "  + ArrayUtil.arrayJoinWith(TrainingConfiguration.ServerTargets.values(), ","));
+        if(config.serverTarget == ServerTargets.ERR_UNKNOWN){
+            return new Exception("Invalid server target. Valid ones are: "  + ArrayUtil.arrayJoinWith(ServerTargets.values(), ","));
         }
         return null;
     }

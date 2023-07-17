@@ -50,9 +50,9 @@ public class ModelTrainingController {
     public @ResponseBody ResponseEntity<DetailedResponse<List<String>>>
     getValidTFTServerTargets()
     {
-        ModelTrainingService.TrainingConfiguration.ServerTargets[] values = ArrayUtil.removeTail(ModelTrainingService.TrainingConfiguration.ServerTargets.values(),1);
+        ModelTrainingService.ServerTargets[] values = ArrayUtil.removeTail(ModelTrainingService.ServerTargets.values(),1);
         List<String> asStringList = new ArrayList<>(values.length);
-        for(ModelTrainingService.TrainingConfiguration.ServerTargets value : values){
+        for(ModelTrainingService.ServerTargets value : values){
             asStringList.add(value.target);
         }
         return new ResponseEntity<>(

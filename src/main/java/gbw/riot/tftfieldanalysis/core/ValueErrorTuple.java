@@ -29,6 +29,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         return new ValueErrorTuple<>(value, error);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T, R extends Throwable> ValueErrorTuple<T, R> encapsulate(ZeroParameterTupleRetriever<T, R> retriever) {
         T value = null;
         try {
@@ -38,6 +39,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         }
         return of(value, null);
     }
+    @SuppressWarnings("unchecked")
     public static <T, N, R extends Throwable> ValueErrorTuple<T, R> encapsulate(OneParameterTupleRetriever<T, N, R> retriever, N value) {
         T result = null;
         try {
@@ -47,7 +49,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         }
         return of(result, null);
     }
-    //Yeah I'm not going beyond this, one person can only keep track so much
+    @SuppressWarnings("unchecked")
     public static <T,N,L,R extends Throwable> ValueErrorTuple<T,R> encapsulate(TwoParameterTupleRetriever<T,N,L,R> retriever, N var1, L var2){
         T result = null;
         try {
