@@ -27,13 +27,13 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
 
     React.useEffect(() => {
         getServerLocations().then(locations => {
-            setAccountServers(locations.response)
+            setAccountServers(locations.data)
         });
     }, [])
     
     React.useEffect(() => {
         getTrainingServerTargets().then(targets => {
-            setPossibleTargets(targets.response);
+            setPossibleTargets(targets.data);
         })
     }, [])
 
@@ -43,15 +43,14 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
             return;
         }
         validateIGNandGetPUUID(ign,selectedAccountServer).then(response => {
-            if(response.response == null){
+            if(response.data == null){
                 setIgnIsValid(false);
                 setIgnError(response.details.name);
-                console.log(ign + " and " + selectedAccountServer + " is not valid")
                 return;
             }
             setIgnIsValid(true);
             setIgnError(null);
-            setPuuid(response.response);
+            setPuuid(response.data);
         })
     }, [selectedAccountServer, ign])
 
@@ -61,9 +60,8 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
         }
         const createAndTrain = async () => {
             const creation = await createModel();
-            console.log("id is " + creation.response.metadata.modelId)
             await trainModel(
-                creation.response.metadata.modelId,
+                creation.data.metadata.modelId,
                 {
                     maxMatchCount: matchCount,
                     patch: undefined,
@@ -71,22 +69,20 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
                 },
                 puuid!
             ).then(response => {
-                if (response.response == null) {
+                if (response.data == null) {
                     console.log("Error training model: " + response.details.name);
                     return;
                 }
-                setModelId(response.response);
+                setModelId(response.data);
                 setTrainingDone(true);
             });
-            console.log("going to view model")
-            goView(creation.response.metadata.modelId);
+            goView(creation.data.metadata.modelId);
             setTrainingDone(true);
         }
         createAndTrain();
     }, [startCreation])
 
     const onSubmit = () => {
-        console.log("Submitted model")
         setProgress(progress + 1);
         setStartCreation(true);
     }

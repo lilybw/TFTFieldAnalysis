@@ -2,6 +2,10 @@ package gbw.riot.tftfieldanalysis.core;
 
 //Because GoLang rules and Java kinda sucks...
 public record ValueErrorTuple<T, R>(T value, R error) {
+    @FunctionalInterface
+    public interface VoidTupleRetriever<M extends Throwable> {
+        void run() throws M;
+    }
 
     @FunctionalInterface
     public interface ZeroParameterTupleRetriever<K, M extends Throwable> {
@@ -27,6 +31,15 @@ public record ValueErrorTuple<T, R>(T value, R error) {
 
     public static <T, R> ValueErrorTuple<T, R> of(T value, R error) {
         return new ValueErrorTuple<>(value, error);
+    }
+
+    public static <R extends Throwable> R encapsulate(VoidTupleRetriever<R> retriever){
+        try{
+            retriever.run();
+        }catch (Throwable e){
+            return (R) e;
+        }
+        return null;
     }
 
     public static <T, R extends Throwable> ValueErrorTuple<T, R> encapsulate(ZeroParameterTupleRetriever<T, R> retriever) {

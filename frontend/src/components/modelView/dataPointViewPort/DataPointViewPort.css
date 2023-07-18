@@ -23,6 +23,8 @@
     filter: drop-shadow(0 0 2rem var(--blue-6));
 }
 .dpwp-point-resulting{
+    position: relative;
+    
     border: .2rem solid var(--gold-2);
     border-radius: 1.5rem;
     border-left: none;

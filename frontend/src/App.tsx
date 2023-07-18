@@ -1,6 +1,6 @@
 import './App.css'
 import Header from './components/header/Header'
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import Landing from './components/landing/Landing';
 import ModelBrowser from './components/modelBrowser/ModelBrowser';
 import ModelCreator from './components/modelCreator/ModelCreator';
@@ -48,6 +48,7 @@ function App() {
     setAppBody(
       <ModelView modelId={modelId} 
         backup={<UniversalBackOffElement />}
+        center = {center}
       />);
   }
   const goLanding = () => {
@@ -57,12 +58,24 @@ function App() {
     );
   }
 
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      const { innerWidth, innerHeight } = window;
+      setCenter({ x: innerWidth / 2, y: innerHeight / 2 });
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    //Used on Component.unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [appBody, setAppBody] = React.useState<JSX.Element>(
     <Landing goBrowse={goBrowse} goCreate={goCreate} />
   )
   const [prevBody, setPrevBody] = React.useState<JSX.Element>(
     <Landing goBrowse={goBrowse} goCreate={goCreate} />
   )
+  const [center, setCenter] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
 
   return (
     <div className="App">

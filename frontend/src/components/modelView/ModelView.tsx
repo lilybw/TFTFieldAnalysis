@@ -10,9 +10,10 @@ import { contains } from '../../ts/arrayUtil';
 
 interface ModelViewProps extends Backupable{
     modelId: number;
+    center: {x: number, y: number}
 }
 
-export default function ModelView({modelId, backup}: ModelViewProps): JSX.Element {
+export default function ModelView({modelId, backup, center}: ModelViewProps): JSX.Element {
     const [selectedNamespace, setSelectedNamespace] = React.useState<string>("");
     const [selectedPointIds, setSelectedPointIds] = React.useState<number[]>([]);
     const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
@@ -25,19 +26,19 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
     React.useEffect(() => {
         getPoints(modelId, selectedNamespace, selectedPointIds, selectedTags)
         .then(pointsResponse => {
-            setViewedPoints(pointsResponse.response);
-            setSortedViewedPoints(pointsResponse.response);
+            setViewedPoints(pointsResponse.data);
+            setSortedViewedPoints(pointsResponse.data);
         })
     }, [selectedNamespace, selectedTags, selectedPointIds])
 
     React.useEffect(() => {
         getModelMetadata(modelId).then(response => {
-            if(response.response == null) return;
-            setModelMetadata(response.response);
+            if(response.data == null) return;
+            setModelMetadata(response.data);
         })
         getNamespaces(modelId).then(response => {
-            if(response.response == null) return;
-            setNamespaces(response.response);
+            if(response.data == null) return;
+            setNamespaces(response.data);
         })
     }, [modelId])
 
@@ -80,6 +81,7 @@ export default function ModelView({modelId, backup}: ModelViewProps): JSX.Elemen
                 selectPoint={setSelectedPoint}
                 metadata={modelMetadata}
                 namespaces={namespaces}
+                center={center}
             />
             <div className="dp-list">
                 <h2>Points</h2>

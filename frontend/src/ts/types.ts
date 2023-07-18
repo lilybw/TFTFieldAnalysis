@@ -48,7 +48,7 @@ export type TrainingConfiguration = {
 }
 
 export type DetailedResponse<T> = {
-    response: T;
+    data: T;
     details: ResponseDetails;
 };
 
@@ -57,9 +57,6 @@ export type ResponseDetails = {
     description: string;
     notes: string[];
 };
-
-
-
 
 export type TrainingSession = {
     date: Date;

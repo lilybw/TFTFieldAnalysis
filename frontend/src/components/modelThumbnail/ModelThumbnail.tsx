@@ -17,7 +17,7 @@ export default function ModelThumbnail({modelId, onSelect}: ModelThumbnailProps)
     React.useEffect(() => {
         if(!hover || metadata != null) return;
         getModelMetadata(modelId).then((metadata) => {
-            setMetadata(metadata.response);
+            setMetadata(metadata.data);
         });
     }, [hover])
 

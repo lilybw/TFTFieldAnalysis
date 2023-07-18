@@ -20,7 +20,7 @@ public class JsonService {
                 () -> mapper.readValue(string,clazz)
         );
     }
-
+    
     public <T> ValueErrorTuple<Collection<T>,Exception> readCollection(String string, Class<T> clazz) {
         return ValueErrorTuple.encapsulate(
                 () -> mapper.readValue(string, new TypeReference<Collection<T>>(){})

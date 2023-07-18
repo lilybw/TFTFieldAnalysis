@@ -22,7 +22,7 @@ public class SecretsService {
         try{
             root = file.getCanonicalPath();
         }catch (IOException e){
-            System.err.println("Project Root Not Found");
+            System.err.println("SecretsService: Project Root Not Found");
             e.printStackTrace();
         }
     }

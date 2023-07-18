@@ -13,7 +13,7 @@ export default function ModelBrowser({backup, goView}: ModelBrowserProps): JSX.E
 
     useEffect(() => {
         getAllModelIds().then((modelIds) => {
-            setModelList(toList(modelIds.response));
+            setModelList(toList(modelIds.data));
         });
     }, []);
     
