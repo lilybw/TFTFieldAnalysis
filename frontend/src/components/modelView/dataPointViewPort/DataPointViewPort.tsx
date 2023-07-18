@@ -1,10 +1,10 @@
 import React from 'react';
 import './DataPointViewPort.css';
-import { DataPointDTO, EdgeDTO, ModelMetaDataDTO } from '../../../ts/types';
+import { ComponentTransform, DataPointDTO, DrawCallProperties, EdgeDTO, ModelMetaDataDTO } from '../../../ts/types';
 import { getEdgeSets, getModelMetadata, getPoints } from '../../../ts/backendIntegration';
 import { toMap } from '../../../ts/dataTypeTranslator';
 import { drawEdges } from '../../../ts/dpwpCanvasManager';
-import { contains, containsAny, notInPlaceAdd, notInPlaceRemoveAll } from '../../../ts/arrayUtil';
+import { DuckType, contains, containsAny, containsAnyGen, duckFilter, notInPlaceAdd, notInPlaceRemoveAll } from '../../../ts/arrayUtil';
 
 interface DataPointViewPort {
     point: DataPointDTO | null;
@@ -14,28 +14,71 @@ interface DataPointViewPort {
     namespaces: string[];
     center: {x: number, y: number}
 }
+
+
+
+const getEmptyProperties = (localOccMin?: number, localOccMax?: number, processedEdges?: EdgeDTO[]): DrawCallProperties => {
+    return {
+        localOccMin: localOccMin || 0,
+        localOccMax: localOccMax || 1,
+        processedEdges: processedEdges || [],
+        maxLineWidth: 0,
+        canvasRef: undefined,
+        transform: {x: 1, y: 1, w: 1, h: 1}
+
+    }
+}
+
 //a better viewport would probably be showing resulting points within the selected alonside the occurrence value of the edge.
 export default function DataPointViewPort({ point, modelId, selectPoint, metadata, namespaces, center }: DataPointViewPort): JSX.Element {
     const [resultingPoints, setResultingPoints] = React.useState<{ [key: number]: DataPointDTO; }>({});
     const [edgesForPoint, setEdgesForPoint] = React.useState<EdgeDTO[]>([]);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
-    const [resultingPointOffsets, setResultingPointOffsets] = React.useState<{ [key: number]: {x: number, y: number}; }>({});
+    const [resultingPointOffsets, setResultingPointOffsets] = React.useState<{ [key: number]: {x: number, y: number} }>({});
     const [edgeMinOccurrence, setEdgeMinOccurrence] = React.useState<number>(1);
     const [ignoredNamespaces, setIgnoredNamespaces] = React.useState<string[]>([]);
-    const [canvasPositionTransform, setCanvasPositionTransform] = 
-        React.useState<{x: number, y: number}>({x: Math.min(center.x), y: Math.min(center.y)});
     
-    console.log("Canvas transform: " + canvasPositionTransform.x + ", " + canvasPositionTransform.y); //TODO: Why is this zero?
-    const resetAll = () => {
+    const xy = Math.max(center.x, center.y);
+    const [canvasTransform, setCanvasTransform] = 
+        React.useState<ComponentTransform>({x: xy, y: xy, w: xy, h: xy});
+    
+    const resetCollections = () => {
         setResultingPoints({});
         setEdgesForPoint([]);
         setResultingPointOffsets({});
     }
 
+    const preprocessEdgesShown = (edges: EdgeDTO[]): DrawCallProperties => {
+        const processed = [];
+        let localOccMin = 10000;
+        let localOccMax = 1;
+
+        for(const edge of edges){
+            const pointA = resultingPoints[edge.pointA];
+            const pointB = resultingPoints[edge.pointB];
+
+            if (pointA == null || pointB == null) continue;
+            if (edge.occurrence < edgeMinOccurrence) continue;
+            if (containsAnyGen(ignoredNamespaces, [pointA, pointB], (r,t) => r == t.namespace)) continue;
+
+            processed.push(edge);
+            localOccMin = Math.min(localOccMin, edge.occurrence);
+            localOccMax = Math.max(localOccMax, edge.occurrence);
+        }
+
+        return getEmptyProperties(localOccMin, localOccMax, processed);
+    }
+
+    const onDrawCall = async (edges: EdgeDTO[]): Promise<{ [key: number]: { x: number, y: number } }> => {
+        if(edges.length == 0 || point == null) return {};
+        const properties = preprocessEdgesShown(edges);
+        return drawEdges(point.id, properties);
+    }
+
     React.useEffect(() => {
         if(point == null) return;
 
-        resetAll();
+        resetCollections();
 
         const loadEdgesAndResultingPoints = async () => {
             let edges = await getEdgeSets(modelId, [point.id]).then(response => {
@@ -55,7 +98,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                 }
             }
 
-            getPoints(modelId, undefined, ids).then(response => {
+            await getPoints(modelId, undefined, ids).then(response => {
                 if(response.data == null) {
                     setResultingPoints({});
                     return;
@@ -63,7 +106,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                 setResultingPoints(toMap(response.data, (point) => point.id));
             });
 
-            const pointOffsets = await drawEdges(edges, canvasRef.current, point.id,edgeMinOccurrence);
+            const pointOffsets = await onDrawCall(edges);
             setResultingPointOffsets(pointOffsets);
         }
         loadEdgesAndResultingPoints();
@@ -71,7 +114,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
 
     React.useEffect(() => {
         if(point == null) return;
-        drawEdges(edgesForPoint, canvasRef.current, point.id, edgeMinOccurrence);
+        onDrawCall(edgesForPoint);
     }, [edgeMinOccurrence])
 
     const getContent = () => {
@@ -83,7 +126,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
             )
         }else{
             return(
-                <>
+                <div className="dpwp-canvas-container">
                 <canvas className="dpwp-canvas" id="dpwp-canvas" 
                     ref={canvasRef}
                     width={center.x} height={center.y}>
@@ -95,20 +138,19 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                     <p>{point.id}</p>
                     <p>{point.tags}</p>
                 </button>
-                {Object.keys(resultingPointOffsets).map((pointId) => {
+                {duckFilter(Object.keys(resultingPointOffsets), DuckType.NUMBER).map((pointId) => {
                     const resultPoint = resultingPoints[Number(pointId)];
 
                     //since it may happen that the resulting points hasn't been loaded yet
                     if(resultPoint == null || resultPoint == undefined) return;
                     if(contains(ignoredNamespaces, resultPoint.namespace, (r,t) => r == t)) return;
-
+                    console.log(canvasTransform);
                     return(
                         <button className="dpwp-point-resulting" key={resultPoint.id}
                             onClick={() => selectPoint(resultPoint)}
                             style={{
-                                left: resultingPointOffsets[resultPoint.id].x + canvasPositionTransform.x, 
-                                top: resultingPointOffsets[resultPoint.id].y + canvasPositionTransform.y,
-                                position: "absolute"
+                                left: resultingPointOffsets[resultPoint.id].x + canvasTransform.x + "px", 
+                                top: resultingPointOffsets[resultPoint.id].y + canvasTransform.y + "px"
                             }}
                         >
                             <p className="no-flow">{resultPoint.namespace}</p>
@@ -118,7 +160,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                     )
                 })}
                 
-                </>
+                </div>
             )
         }
     }

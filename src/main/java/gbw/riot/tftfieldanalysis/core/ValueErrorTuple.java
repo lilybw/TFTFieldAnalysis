@@ -4,6 +4,11 @@ package gbw.riot.tftfieldanalysis.core;
 public record ValueErrorTuple<T, R>(T value, R error) {
 
     @FunctionalInterface
+    public interface VoidTupleRetriever<M extends Throwable> {
+        void run() throws M;
+    }
+
+    @FunctionalInterface
     public interface ZeroParameterTupleRetriever<K, M extends Throwable> {
         K run() throws M;
     }
@@ -27,6 +32,16 @@ public record ValueErrorTuple<T, R>(T value, R error) {
 
     public static <T, R> ValueErrorTuple<T, R> of(T value, R error) {
         return new ValueErrorTuple<>(value, error);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <M extends Throwable> M encapsulate(VoidTupleRetriever<M> retriever){
+        try{
+            retriever.run();
+        }catch (Throwable e){
+            return (M) e;
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

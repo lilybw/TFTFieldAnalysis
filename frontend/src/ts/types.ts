@@ -62,3 +62,21 @@ export type TrainingSession = {
     date: Date;
     msTaken: number;
 };
+
+export type ComponentTransform = {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+};
+
+export type DrawCallProperties = {
+    localOccMin: number;
+    localOccMax: number;
+    maxLineWidth: number;
+    processedEdges: EdgeDTO[];
+    canvasRef?: HTMLCanvasElement;
+    transform: ComponentTransform;
+}
+
+export type Tuple<T,R> = { first: T, second: R };

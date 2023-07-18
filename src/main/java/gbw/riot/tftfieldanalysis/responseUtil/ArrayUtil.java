@@ -24,6 +24,10 @@ public class ArrayUtil {
     public interface VoidFunction<T> {
         void eval(T o);
     }
+    @FunctionalInterface
+    public interface BiFunc<T,R>{
+        R eval(T o1, T o2);
+    }
 
     /**
      * Function checking if a given object is a valid Integer using Integer.parseInt(Obj)
@@ -56,6 +60,12 @@ public class ArrayUtil {
         List<T> list = new ArrayList<T>(c);
         list.sort(comparator);
         return list;
+    }
+
+    public static <T> T[] orderedOperation(T[] arr1, T[] arr2, BiFunc<T[],T[]> order, BiFunc<T[],T[]> operation){
+        T[] first = order.eval(arr1,arr2);
+        T[] second = first == arr1 ? arr2 : arr1;
+        return operation.eval(first,second);
     }
 
     @SuppressWarnings("unchecked")
@@ -191,6 +201,8 @@ public class ArrayUtil {
         }
         return asPrimitive;
     }
+
+
     public static String[] resize(String[] array, BooleanFunction<String> includeFunc){
         List<String> list = new ArrayList<>();
         for(String s : array){
@@ -218,6 +230,22 @@ public class ArrayUtil {
             }
         }
         return toReturn.toArray(new String[0]);
+    }
+
+
+    public record CollectionTuple<T>(Collection<T> first, Collection<T> second){}
+
+    public static CollectionTuple<Integer> resizeKeepRemainder(int[] array, BooleanFunction<Integer> includeFunc){
+        List<Integer> included = new ArrayList<>();
+        List<Integer> remainder = new ArrayList<>();
+        for(int i : array){
+            if(includeFunc.eval(i)){
+                included.add(i);
+            }else{
+                remainder.add(i);
+            }
+        }
+        return new CollectionTuple<>(included,remainder);
     }
 
     public static int countLengthIgnore(Object[] arr, BooleanFunction<Object> func){

@@ -1,11 +1,4 @@
-import { EdgeDTO, ModelMetaDataDTO } from "./types";
-
-const toAbsolute = (point: {x: number, y: number}, center: {x: number, y: number}) => {
-    return {
-        x: point.x + center.x * .8,
-        y: point.y + center.y * -.3
-    };
-};
+import { ComponentTransform, DrawCallProperties, EdgeDTO, ModelMetaDataDTO } from "./types";
 
 const calcVarianceMod = (i: number, varianceSteps: number) => {
     const stepSize = 1 / varianceSteps;
@@ -19,52 +12,45 @@ const calcVarianceMod = (i: number, varianceSteps: number) => {
  * @param canvas canvas to draw on
  * @returns the absolute coordinates of the end of each edge in relation to the center of the canvas
  */
-export const drawEdges = async (edges: EdgeDTO[], canvas: HTMLCanvasElement | null, 
-    ogPointId: number, edgeMinOccurrence: number)
-    : Promise<{[key: number]: {x:number,y:number}}> => {
+export const drawEdges = async (ogPointId: number, properties: DrawCallProperties
+    ): Promise<{[key: number]: {x:number,y:number}}> => {
 
-    if(canvas == null) return {};
-    const ctx = canvas.getContext('2d');
+    if (!properties.canvasRef) return {};
+    const ctx = properties.canvasRef.getContext('2d');
     if(!ctx) return {};
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, properties.canvasRef.width, properties.canvasRef.height);
 
-    edges = edges.filter(edge => edge.occurrence >= edgeMinOccurrence); //TODO: make this a post process step
-    let localOccMax = 0;
-    edges.forEach(edge => {
-        if(edge.occurrence > localOccMax) localOccMax = edge.occurrence;
-    });
+    const center = { 
+        x: properties.transform.x + (properties.transform.w / 2), 
+        y: properties.transform.y + (properties.transform.h / 2)
+    };
+    const length = Math.min(properties.transform.w, properties.transform.h) / 2.5;
 
-    const absoluteStyles = window.getComputedStyle(canvas);
-
-    const center = {x: canvas.width / 2, y: canvas.height / 2};
-    const length = Math.min(canvas.width, canvas.height) / 2.5;
-
-    const angleIncrement = 2 * Math.PI / edges.length;
+    const angleIncrement = 2 * Math.PI / properties.processedEdges.length;
     const angleOffset = .5 * Math.PI; // Making 0° be at the top of the circle
 
     ctx.strokeStyle = 'white';
-    const maxLineWidth = 20;
-    const varianceSteps = Math.floor(edges.length / 13);
+    const varianceSteps = Math.floor(properties.processedEdges.length / 13);
 
     const toReturn: {[key: number]: {x:number,y:number}} = {};
 
-    for(let i = 0; i < edges.length; i++) {
-        const edge = edges[i];
+    for (let i = 0; i < properties.processedEdges.length; i++) {
+        const edge = properties.processedEdges[i];
 
         const varianceModifier = calcVarianceMod(i, varianceSteps);
 
         const end = {
-            x: center.x + Math.cos(angleIncrement * i - angleOffset) * (length - varianceModifier * 200),
-            y: center.y + Math.sin(angleIncrement * i - angleOffset) * (length - varianceModifier * 200)
+            x: center.x + Math.cos(angleIncrement * i - angleOffset) * (length - varianceModifier * properties.transform.w),
+            y: center.y + Math.sin(angleIncrement * i - angleOffset) * (length - varianceModifier * properties.transform.h)
         };
         
         if(edge.pointA == ogPointId) {
-            toReturn[edge.pointB] = toAbsolute(end,center);
+            toReturn[edge.pointB] = end;
         }else{
-            toReturn[edge.pointA] = toAbsolute(end,center);
+            toReturn[edge.pointA] = end;
         }
 
-        ctx.lineWidth = maxLineWidth * (edge.occurrence / localOccMax);
+        ctx.lineWidth = properties.maxLineWidth * (edge.occurrence / properties.localOccMax);
         ctx.beginPath();
         ctx.moveTo(center.x, center.y);
         ctx.lineTo(end.x, end.y);

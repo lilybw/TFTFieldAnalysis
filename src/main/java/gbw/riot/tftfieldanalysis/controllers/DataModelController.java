@@ -2,7 +2,8 @@ package gbw.riot.tftfieldanalysis.controllers;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
-import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
+import gbw.riot.tftfieldanalysis.core.Edge;
+import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
@@ -11,8 +12,10 @@ import gbw.riot.tftfieldanalysis.responseUtil.dtos.EdgeDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.ModelMetaDataDTO;
 import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
+import gbw.riot.tftfieldanalysis.services.EdgeSetProcessingService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 
+import gbw.riot.tftfieldanalysis.services.PointCollectionProcessingService;
 import io.swagger.v3.oas.annotations.Operation;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,7 +39,17 @@ public class DataModelController {
     @Autowired
     private DefaultResponseRegistryService responses;
 
-    @Operation(summary = "Retrieves ALL data associated with a given model. Do not automate. Only retrieve the data from a model you need.")
+    @Autowired
+    private EdgeSetProcessingService edgeService;
+
+    @Autowired
+    private PointCollectionProcessingService pointService;
+
+
+    /**
+     * @param modelId id of model to get data of
+     * @return Retrieves ALL data associated with a given model. Do not automate. Only retrieve the data from a model you need.
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -61,7 +74,9 @@ public class DataModelController {
         );
     }
 
-    @Operation(summary = "Retrieves all model ids currently in registry.")
+    /**
+     * @return Retrieves all model ids currently in registry.
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing")
@@ -81,7 +96,9 @@ public class DataModelController {
         );
     }
 
-    @Operation(summary = "Create a new empty model")
+    /**
+     * @return Create a new empty model
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success")
     })
@@ -98,7 +115,10 @@ public class DataModelController {
         );
     }
 
-    @Operation(summary = "Remove model permanently.")
+    /**
+     * @param modelId id of model to delete
+     * @return Delete model permanently
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -125,17 +145,22 @@ public class DataModelController {
         return responses.getResponseOnModelNotFound(modelId);
     }
 
-    @Operation(summary = "Query model DataPoints which conforms to provided parameters.")
+    /**
+     * @param modelId to query
+     * @param namespaces returned points have to be in
+     * @param pointIds of specific points in question
+     * @param tags returned points have to have
+     * @return Query model DataPoints which conforms to provided parameters.
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
-            @ApiResponse(responseCode = "404", description = "No such model"),
-            @ApiResponse(responseCode = "418", description = "Api usage error.")
+            @ApiResponse(responseCode = "404", description = "No such model")
     })
     @GetMapping("/{modelId}/points")
     public @ResponseBody ResponseEntity<DetailedResponse<List<DataPointDTO>>> getPointsInModel(
             @PathVariable int modelId,
-            @RequestParam(required = false) String namespace,
+            @RequestParam(required = false) String[] namespaces,
             @RequestParam(required = false) int[] pointIds,
             @RequestParam(required = false) String[] tags
     ){
@@ -147,85 +172,25 @@ public class DataModelController {
             return responses.getResponseOnModelNotFound(modelId);
         }
 
-        int computedResolution = 0;
-        computedResolution += namespace == null || namespace.length() == 0 ? 0 : 1;
-        computedResolution += pointIds == null || pointIds.length == 0 ? 0 : 2;
-        computedResolution += tags == null || tags.length == 0 ? 0 : 4;
-
-        Dictionary<String> dictionary = model.getMetaData().dictionary();
-        int translatedNamespace = dictionary.reverseTranslate(namespace);
-        int[] translatedTags;
-
-        Set<DataPoint> toReturn;
-
-        switch (computedResolution) {
-            case 0 -> //neither namespace nor pointIds declared
-                toReturn = model.getAllPoints();
-            case 1 -> //namespace only
-                toReturn = model.getPointsInNamespace(namespace);
-            case 2 -> //pointIds only
-                toReturn = model.getSpecificDataPoints(pointIds);
-            case 3 -> //points in namespace of ids pointIds
-                toReturn = ArrayUtil.resize(
-                                        model.getPointsInNamespace(namespace),
-                                        point -> ArrayUtil.contains(pointIds, point.getId())
-                                );
-            case 4 -> {
-                toReturn = model.getPointsWithTags(tags);
-            }
-            case 5 -> {//points in namespace x with tags x,y,z
-                translatedTags = dictionary.reverseTranslateAll(tags);
-                toReturn = ArrayUtil.resize(
-                        model.getPointsInNamespace(namespace),
-                        point -> ArrayUtil.containsAnyOf(translatedTags, point.getTags())
-                );
-            }
-            case 6 -> {  //points with ids x,y,z and tags x,y,z
-                translatedTags = dictionary.reverseTranslateAll(tags);
-                toReturn = ArrayUtil.resize(
-                        model.getSpecificDataPoints(pointIds),
-                        point -> ArrayUtil.containsAnyOf(translatedTags, point.getTags())
-                );
-            }
-            case 7 -> { //points with ids x,y,z and tags x,y,z within namespace x
-                Set<DataPoint> withTags = model.getPointsWithTags(tags);
-                Set<DataPoint> withIds = model.getSpecificDataPoints(pointIds);
-                translatedTags = dictionary.reverseTranslateAll(tags);
-                if(withIds.size() <= withTags.size()){
-                    toReturn = withIds.stream()
-                            .filter(point -> point.getNamespace() == translatedNamespace)
-                            .filter(point -> ArrayUtil.containsAnyOf(translatedTags,point.getTags()))
-                            .collect(Collectors.toSet());
-                }else {
-                    toReturn = withTags.stream()
-                            .filter(point -> point.getNamespace() == translatedNamespace)
-                            .filter(point -> ArrayUtil.isAnyOf(point.getId(), pointIds))
-                            .collect(Collectors.toSet());
-                }
-            }
-            default -> {
-                return new ResponseEntity<>(
-                        DetailedResponse.unknownError(),
-                        HttpStatusCode.valueOf(500)
-                );
-            }
-        }
-        if(toReturn == null){
-            return new ResponseEntity<>(
-                    DetailedResponse.details(
-                            new ResponseDetails("Unknown API usage error", "Somehow, you've managed to end up here. Well done.", null)
-                    ), HttpStatusCode.valueOf(400)
-            );
-        }
+        Set<DataPoint> toReturn = pointService.queryRequireAll(namespaces, pointIds, tags, model);
 
         return new ResponseEntity<>(
-                DetailedResponse.success(
-                        DataPointDTO.of(toReturn,model)
+                DetailedResponse.of(
+                        DataPointDTO.of(toReturn,model),
+                        new ResponseDetails(
+                                toReturn.size() == 0 ? "No Such Points Found" : "Points Retrieved Succesfully",
+                                null,
+                                null
+                        )
                 ), HttpStatusCode.valueOf(200)
         );
     }
 
-    @Operation(summary = "Retrieves all namespaces in model")
+
+    /**
+     * @param modelId to retrieve namespaces from
+     * @return String[n] | String[0] - All namespaces in model
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -250,7 +215,14 @@ public class DataModelController {
         );
     }
 
-    @Operation(summary = "Query edges for points, resulting edge lists are sorted based on occurrence value in descending order")
+    /**
+     *
+     * @param points Points to get edge sets for
+     * @param modelId Model to query
+     * @param includedNamespaces What namespace to allow for resulting points - any if null or empty
+     * @param includedTags What tags to all for resulting points - any if null or empty
+     * @return Query edges for points, resulting edge lists are sorted based on occurrence value in descending order
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Map of each point id provided as key and with a list of its edges as value"),
             @ApiResponse(responseCode = "206", description = "Partial success"),
@@ -262,8 +234,12 @@ public class DataModelController {
     @GetMapping("/{modelId}/edges")
     public @ResponseBody ResponseEntity<DetailedResponse<Map<Integer, List<EdgeDTO>>>>
     getEdgeSetForPoints(
-            @RequestParam int[] points, @PathVariable int modelId
+            @RequestParam int[] points,
+            @PathVariable int modelId,
+            @RequestParam(required = false) String[] includedNamespaces,
+            @RequestParam(required = false) String[] includedTags
     ){
+        //preflight checks - fundamental
         if(registry == null){
             return responses.getResponseOnRegistryMissing();
         }
@@ -285,15 +261,14 @@ public class DataModelController {
             );
         }
 
-        int[] pointsThatDoesNotExist = new int[0];
-        int[] pointsThatDoesExist = ArrayUtil.resize(points, point -> model.getPointMap().get(point) != null);
-        boolean invalidPointsIncluded = false;
-        if(pointsThatDoesExist.length != points.length){
-            pointsThatDoesNotExist = ArrayUtil.resize(points, point -> model.getPointMap().get(point) == null);
-            invalidPointsIncluded = true;
-        }
+        //minor optimization.
+        ArrayUtil.CollectionTuple<Integer> includedExcluded = ArrayUtil.resizeKeepRemainder(
+                points, point -> model.getPointMap().get(point) != null
+        );
+        Collection<Integer> pointsThatDoesExist = includedExcluded.first();
+        Collection<Integer> pointsThatDoesNotExist = includedExcluded.second();
 
-        if(pointsThatDoesExist.length == 0){
+        if(pointsThatDoesExist.size() == 0){
             return new ResponseEntity<>(
                     DetailedResponse.details(
                             new ResponseDetails(
@@ -304,8 +279,12 @@ public class DataModelController {
                     ), HttpStatusCode.valueOf(400)
             );
         }
+        Map<Integer, Set<Edge>> edgesRaw = model.getEdgesForPoints(pointsThatDoesExist);
+        //post fetch filter - not optimal. Each edge / point on insert should be load into more maps so this could be a look up
+        edgesRaw = edgeService.reduceResultMapToInclusions(includedNamespaces, includedTags, model, edgesRaw);
 
-        Map<Integer, List<EdgeDTO>> edges = EdgeDTO.of(model.getEdgesForPoints(pointsThatDoesExist));
+        //Final edge sets found
+        Map<Integer, List<EdgeDTO>> edges = EdgeDTO.of(edgesRaw);
         Map<Integer, List<EdgeDTO>> sortedEdges = new HashMap<>();
         for(int key : edges.keySet()){
             List<EdgeDTO> asList = new ArrayList<>(edges.get(key));
@@ -317,12 +296,15 @@ public class DataModelController {
             );
         }
 
-        if(invalidPointsIncluded){
+        if(!pointsThatDoesNotExist.isEmpty()){
             return new ResponseEntity<>(
                     new DetailedResponse<>(
                             sortedEdges,
                             new ResponseDetails(
-                                    "Partial Success", "Some points did not exist in model", ArrayUtil.fromIntArrayToStringList(pointsThatDoesNotExist)
+                                    "Partial Success",
+                                    "Some points did not exist in model",
+                                    pointsThatDoesNotExist.stream().map(String::valueOf).collect(Collectors.toList()
+                                    )
                             )
                     ), HttpStatusCode.valueOf(206)
             );
@@ -335,7 +317,11 @@ public class DataModelController {
         );
     }
 
-    @Operation(summary = "Get metadata for model")
+
+    /**
+     * @param modelId
+     * @return The metadata for the model
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Model metadata"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -360,7 +346,9 @@ public class DataModelController {
         );
     }
 
-    @Operation(summary = "Retrives all tags for all points in model.")
+    /**
+     * @return String[n] | String[0] - Retrieve all tags of any points in model as one List
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of tags sorted on how many points had that tag, in descending order."),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),

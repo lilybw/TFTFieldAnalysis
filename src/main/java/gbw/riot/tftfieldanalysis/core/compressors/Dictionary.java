@@ -1,5 +1,7 @@
 package gbw.riot.tftfieldanalysis.core.compressors;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.*;
 
 public class Dictionary<T> {
@@ -27,14 +29,14 @@ public class Dictionary<T> {
         return val;
     }
 
-    public Set<Integer> insertAll(T[] values){
+    public Set<Integer> insertAll( @NotNull T[] values){
         Set<Integer> toReturn = new HashSet<>();
         for (T value : values) {
             toReturn.add(insert(value));
         }
         return toReturn;
     }
-    public Set<Integer> insertAll(Collection<T> values){
+    public Set<Integer> insertAll( @NotNull Collection<T> values){
         Set<Integer> toReturn = new HashSet<>();
         for (T value : values) {
             toReturn.add(insert(value));
@@ -56,15 +58,16 @@ public class Dictionary<T> {
         }
         return toReturn;
     }
-    public int[] reverseTranslateAll(Collection<T> values){
+    public int[] reverseTranslateAll( @NotNull Collection<T> values){
         int[] toReturn = new int[values.size()];
         int index = 0;
         for(T value : values){
             toReturn[index] = reverseTranslate(value);
+            index++;
         }
         return toReturn;
     }
-    public int[] reverseTranslateAll(T[] values){
+    public int[] reverseTranslateAll( @NotNull T[] values){
         int[] toReturn = new int[values.length];
         for(int i = 0; i < toReturn.length; i++){
             toReturn[i] = reverseTranslate(values[i]);
@@ -72,21 +75,21 @@ public class Dictionary<T> {
         return toReturn;
     }
 
-    public T translate(Integer value){
+    public T translate( @NotNull Integer value){
         T toReturn = dictionary.get(value);
         if(toReturn == null){
             return onUntranslatableA;
         }
         return toReturn;
     }
-    public List<T> translateAll(Integer[] values){
+    public List<T> translateAll( @NotNull Integer[] values){
         List<T> toReturn = new ArrayList<>(values.length);
         for(int i : values){
             toReturn.add(translate(i));
         }
         return toReturn;
     }
-    public List<T> translateAll(Collection<Integer> values){
+    public List<T> translateAll( @NotNull Collection<Integer> values){
         List<T> toReturn = new ArrayList<>(values.size());
         for(int i : values){
             toReturn.add(translate(i));
@@ -94,7 +97,7 @@ public class Dictionary<T> {
         return toReturn;
     }
 
-    public <R> Map<T,R> decompress(Map<Integer,R> map){
+    public <R> Map<T,R> decompress( @NotNull Map<Integer,R> map){
         Map<T,R> toReturn = new HashMap<>();
         for(Integer key : map.keySet()){
             toReturn.put(
@@ -105,7 +108,7 @@ public class Dictionary<T> {
         return toReturn;
     }
 
-    public <M> Map<Integer,M> compress(Map<T,M> map){
+    public <M> Map<Integer,M> compress( @NotNull Map<T,M> map){
         Map<Integer,M> toReturn = new HashMap<>();
         for(T key : map.keySet()){
             toReturn.put(
