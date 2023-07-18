@@ -33,10 +33,10 @@ export default function StepDisplay({steps, currentStep}: StepDisplayProps): JSX
             <div className="dots">
                 {steps.map((name, index) => {
                     return (
-                        <>
-                        <h3 className={getClassListFor(index)} key={index}>{name}</h3>
-                        {appendSpacer(index)}
-                        </>
+                        <div key={index}>
+                            <h3 className={getClassListFor(index)} >{name}</h3>
+                            {appendSpacer(index)}
+                        </div>
                     )
                 })}
             </div>

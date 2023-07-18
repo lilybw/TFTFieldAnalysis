@@ -12,17 +12,20 @@ interface DataPointViewPort {
     selectPoint: (point: DataPointDTO) => void;
     metadata: ModelMetaDataDTO | null;
     namespaces: string[];
+    center: {x: number, y: number}
 }
 //a better viewport would probably be showing resulting points within the selected alonside the occurrence value of the edge.
-export default function DataPointViewPort({ point, modelId, selectPoint, metadata, namespaces }: DataPointViewPort): JSX.Element {
+export default function DataPointViewPort({ point, modelId, selectPoint, metadata, namespaces, center }: DataPointViewPort): JSX.Element {
     const [resultingPoints, setResultingPoints] = React.useState<{ [key: number]: DataPointDTO; }>({});
     const [edgesForPoint, setEdgesForPoint] = React.useState<EdgeDTO[]>([]);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const [resultingPointOffsets, setResultingPointOffsets] = React.useState<{ [key: number]: {x: number, y: number}; }>({});
-    const [canvasDim, setCanvasDim] = React.useState<{width: number, height: number}>({width: 1000, height: 1000});
     const [edgeMinOccurrence, setEdgeMinOccurrence] = React.useState<number>(1);
     const [ignoredNamespaces, setIgnoredNamespaces] = React.useState<string[]>([]);
-
+    const [canvasPositionTransform, setCanvasPositionTransform] = 
+        React.useState<{x: number, y: number}>({x: Math.min(center.x), y: Math.min(center.y)});
+    
+    console.log("Canvas transform: " + canvasPositionTransform.x + ", " + canvasPositionTransform.y); //TODO: Why is this zero?
     const resetAll = () => {
         setResultingPoints({});
         setEdgesForPoint([]);
@@ -36,8 +39,8 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
 
         const loadEdgesAndResultingPoints = async () => {
             let edges = await getEdgeSets(modelId, [point.id]).then(response => {
-                if(response.response == null) return;
-                return response.response[point.id];
+                if(response.data == null) return;
+                return response.data[point.id];
             });
             
             if(edges == null || edges == undefined) return;
@@ -53,11 +56,11 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
             }
 
             getPoints(modelId, undefined, ids).then(response => {
-                if(response.response == null) {
+                if(response.data == null) {
                     setResultingPoints({});
                     return;
                 };
-                setResultingPoints(toMap(response.response, (point) => point.id));
+                setResultingPoints(toMap(response.data, (point) => point.id));
             });
 
             const pointOffsets = await drawEdges(edges, canvasRef.current, point.id,edgeMinOccurrence);
@@ -65,19 +68,6 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
         }
         loadEdgesAndResultingPoints();
     }, [point])
-
-    React.useLayoutEffect(() => {
-        const updateCanvas = () => {
-            if(point == null) return;
-            drawEdges(edgesForPoint, canvasRef.current, point.id,edgeMinOccurrence);
-            setCanvasDim({
-                    width: window.innerWidth*.5, 
-                    height: window.innerHeight*.5
-                });
-        }
-        window.addEventListener("resize", updateCanvas);
-        return () => window.removeEventListener("resize", updateCanvas);
-    }, [window.innerWidth, window.innerHeight])
 
     React.useEffect(() => {
         if(point == null) return;
@@ -96,7 +86,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                 <>
                 <canvas className="dpwp-canvas" id="dpwp-canvas" 
                     ref={canvasRef}
-                    width={canvasDim.width} height={canvasDim.height}>
+                    width={center.x} height={center.y}>
                 </canvas>
                 <button className="dpwp-point"
                     onClick={() => selectPoint(point)}
@@ -116,8 +106,8 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                         <button className="dpwp-point-resulting" key={resultPoint.id}
                             onClick={() => selectPoint(resultPoint)}
                             style={{
-                                left: resultingPointOffsets[resultPoint.id].x, 
-                                top: resultingPointOffsets[resultPoint.id].y,
+                                left: resultingPointOffsets[resultPoint.id].x + canvasPositionTransform.x, 
+                                top: resultingPointOffsets[resultPoint.id].y + canvasPositionTransform.y,
                                 position: "absolute"
                             }}
                         >

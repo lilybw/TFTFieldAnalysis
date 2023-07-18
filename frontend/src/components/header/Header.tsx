@@ -14,8 +14,8 @@ const Header = ({ frontendVersion, goLanding}: HeaderProps): JSX.Element => {
 
     React.useEffect(() => {
         getBackendVersion().then((version) => {
-            if(version.response == null) return;
-            setBackendVersion(version.response)
+            if(version.data == null) return;
+            setBackendVersion(version.data)
         })
     }, [])
 

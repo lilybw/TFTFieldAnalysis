@@ -12,7 +12,7 @@ interface ModelMenuProps{
 
 
 export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSetPointId, namespaces }: ModelMenuProps): JSX.Element {
-    const [sortedNamespaces, setSortedNamespaces] = React.useState<string[]>([]);
+    const [sortedNamespaces, setSortedNamespaces] = React.useState<string[]>(namespaces);
     const [tags, setTags] = React.useState<string[]>([]);
     const [sortedTags, setSortedTags] = React.useState<string[]>([]);
     const [showNamespaces, setShowNamespaces] = React.useState<boolean>(false);
@@ -21,8 +21,8 @@ export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSet
 
     React.useEffect(() => {
         getTagsInModel(modelId).then(tags => {
-            setTags(tags.response);
-            setSortedTags(tags.response);
+            setTags(tags.data);
+            setSortedTags(tags.data);
         })
     }, []);
     

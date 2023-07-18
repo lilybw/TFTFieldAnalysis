@@ -5,7 +5,7 @@ const backendIp = 'localhost';
 const __api_v1  = `http://${backendIp}:${backendPort}/api/v1`;
 
 async function onIntegrationError<T>(error: unknown): Promise<DetailedResponse<T>> {
-    return { response: null as T, details: { name: 'Error', description: String(error), notes: [] } }
+    return { data: null as T, details: { name: 'Error', description: String(error), notes: [] } }
 }
 
 export async function getModel(id: number): Promise<DetailedResponse<ModelDTO>> {
@@ -111,9 +111,8 @@ export async function getServerLocations(): Promise<DetailedResponse<string[]>> 
     return data;
 }
 
-export async function validateIGNandGetPUUID(ign: string, server: string): 
-    Promise<DetailedResponse<string>> {
-    const response = await fetch(`${__api_v1}/train/validate/${ign}/server/${server}`, {method: "GET", mode: "cors"});
+export async function validateIGNandGetPUUID(ign: string, server: string): Promise<DetailedResponse<string>> {
+    const response = await fetch(`${__api_v1}/train/validate?ign=${ign}&server=${server}`, {method: "GET", mode: "cors"});
     const data = await response.json();
     return data;
 }

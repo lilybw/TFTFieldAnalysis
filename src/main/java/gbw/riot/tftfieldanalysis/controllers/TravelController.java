@@ -8,7 +8,6 @@ import gbw.riot.tftfieldanalysis.responseUtil.dtos.TravelBranchOptionDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.TravelContextSyntaxDeclaration;
 import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
-import gbw.riot.tftfieldanalysis.services.TravelContextParser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,8 +31,6 @@ public class TravelController {
     @Autowired
     private DefaultResponseRegistryService responses;
 
-    @Autowired
-    private TravelContextParser parser;
 
     @Operation(summary = "Retrieves next options for the current travel context")
     @ApiResponses(value = {
@@ -85,27 +82,6 @@ public class TravelController {
 
 
         return null;
-    }
-
-    @Operation(summary = "Retrieves documentation regarding the whole Travel Context ordeal.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of options, unsorted.")
-    })
-    @GetMapping("/contextSyntaxDeclaration")
-    public @ResponseBody ResponseEntity<DetailedResponse<TravelContextSyntaxDeclaration>>
-    getTravelContextSyntaxDeclaration(){
-        return new ResponseEntity<>(
-                DetailedResponse.success(
-                    new TravelContextSyntaxDeclaration(
-                            parser.entryEnd,
-                            parser.entrySubdivision,
-                            parser.entryMemberSubdivision,
-                            "Each entry member is a \""+parser.entryMemberSubdivision +"\" separated array.\n" +
-                                    "The members themselves are separated by: \""+parser.entrySubdivision +"\".\n" +
-                                    "Each branch entry is separated by: \""+parser.entryEnd +"\""
-                    )
-                ), HttpStatusCode.valueOf(200)
-        );
     }
 
 

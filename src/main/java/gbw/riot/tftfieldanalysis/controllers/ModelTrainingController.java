@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.Max;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,9 @@ public class ModelTrainingController {
     @Autowired
     private DataRetrievalService dataRetrievalService;
 
-    @Operation(summary = "Static asset retrieval: Get TFT Server Targets")
+    /**
+     * @return Static asset retrieval: Get TFT Server Targets
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "String array of valid TFT servers.")
     })
@@ -62,7 +65,10 @@ public class ModelTrainingController {
         );
     }
 
-    @Operation(summary = "Static asset retrieval: Get RIOT Account Server Targets")
+
+    /**
+     * @return Static asset retrieval: Get RIOT Account Server Targets
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "String array of valid account servers.")
     })
@@ -82,16 +88,23 @@ public class ModelTrainingController {
         );
     }
 
-    @Operation(summary = "Cross confirmation: Validate account, returns player puuid")
+    /**
+     * @param ign IGN of player for given server
+     * @param server Server domain
+     * @return Cross confirmation: Validate account, returns player puuid
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Player puuid"),
             @ApiResponse(responseCode = "404", description = "Invalid account server target"),
             @ApiResponse(responseCode = "400", description = "Unable to locate/access account")
     })
-    @GetMapping("/validate/{ign}/server/{server}")
+    @GetMapping("/validate")
     public @ResponseBody ResponseEntity<DetailedResponse<String>>
-    validatePlayerIGN(@PathVariable String ign, @PathVariable String server){
-        ServerLocations location = ServerLocations.byDomain(server);
+    validatePlayerIGN(
+            @RequestParam String ign,
+            @RequestParam @Schema(implementation = ServerLocations.class) String server
+    ){
+        ServerLocations location = ServerLocations.byDomain(server.toLowerCase());
 
         if(location == ServerLocations.ERR_UNKNOWN){
             return new ResponseEntity<>(
@@ -119,7 +132,12 @@ public class ModelTrainingController {
         );
     }
 
-    @Operation(summary = "Train model, response withheld until completion.")
+    /**
+     * @param id identifier of model to train
+     * @param puuid personal uuid of base player for model
+     * @param config TrainingConfig
+     * @return The id of the model when the training is complete (long-polling)
+     */
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Model id"),
             @ApiResponse(responseCode = "404", description = "Unknown model"),
