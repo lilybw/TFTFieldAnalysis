@@ -5,8 +5,6 @@ target/
 !**/src/test/**/target/
 secrets.txt
 
-frontend/src/generated-sources/openapi/
-
 .DS_STORE
 node_modules
 scripts/flow/*/.flowconfig

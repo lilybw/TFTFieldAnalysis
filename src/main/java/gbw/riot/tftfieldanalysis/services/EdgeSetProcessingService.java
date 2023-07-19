@@ -16,7 +16,7 @@ public class EdgeSetProcessingService {
 
 
     public Map<Integer, Set<Edge>> reduceResultMapToInclusions(String[] includedNamespaces, String[] includedTags, DataModel model, Map<Integer, Set<Edge>> edgesRaw) {
-        if(
+        if( //Early bail if there's no reduction parameters at all for this collection
             (includedNamespaces == null || includedNamespaces.length == 0)
                     &&
             (includedTags == null || includedTags.length == 0)
@@ -24,9 +24,9 @@ public class EdgeSetProcessingService {
             return edgesRaw;
         }
 
-        //reduce arrays to what actually exists in the model
-        int[] translatedIncludedNamespaces = model.makeNamespacesComply(includedNamespaces);
-        int[] translatedIncludedTags = model.makeTagsComply(includedTags);
+        //reduce parameter arrays to what actually exists in the model - also: Null safety.
+        int[] translatedIncludedNamespaces = includedNamespaces == null ? new int[0] : model.makeNamespacesComply(includedNamespaces);
+        int[] translatedIncludedTags = includedTags == null ? new int[0] : model.makeTagsComply(includedTags);
 
         int calculatedSolution = translatedIncludedNamespaces.length > 0 ? 1 : 0;
         calculatedSolution += translatedIncludedTags.length > 0 ? 2 : 0;

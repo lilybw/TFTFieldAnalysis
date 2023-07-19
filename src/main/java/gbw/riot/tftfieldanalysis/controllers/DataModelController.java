@@ -45,11 +45,11 @@ public class DataModelController {
     @Autowired
     private PointCollectionProcessingService pointService;
 
-
     /**
      * @param modelId id of model to get data of
      * @return Retrieves ALL data associated with a given model. Do not automate. Only retrieve the data from a model you need.
      */
+    @Operation(summary = "Retrieves ALL data associated with a given model. Do not automate. Only retrieve the data from a model you need.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -74,9 +74,11 @@ public class DataModelController {
         );
     }
 
+
     /**
      * @return Retrieves all model ids currently in registry.
      */
+    @Operation(summary = "Retrieves all model ids currently in registry.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing")
@@ -96,9 +98,11 @@ public class DataModelController {
         );
     }
 
+
     /**
-     * @return Create a new empty model
+     * @return Create a new empty model.
      */
+    @Operation(summary = "Create a new empty model.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success")
     })
@@ -115,10 +119,12 @@ public class DataModelController {
         );
     }
 
+
     /**
      * @param modelId id of model to delete
      * @return Delete model permanently
      */
+    @Operation(summary = "Delete model permanently.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -145,6 +151,7 @@ public class DataModelController {
         return responses.getResponseOnModelNotFound(modelId);
     }
 
+
     /**
      * @param modelId to query
      * @param namespaces returned points have to be in
@@ -152,6 +159,7 @@ public class DataModelController {
      * @param tags returned points have to have
      * @return Query model DataPoints which conforms to provided parameters.
      */
+    @Operation(summary = "Query model DataPoints which conforms to provided parameters.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -191,6 +199,7 @@ public class DataModelController {
      * @param modelId to retrieve namespaces from
      * @return String[n] | String[0] - All namespaces in model
      */
+    @Operation(summary = "String[n] | String[0] - All namespaces in model.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -215,14 +224,15 @@ public class DataModelController {
         );
     }
 
+
     /**
-     *
      * @param points Points to get edge sets for
      * @param modelId Model to query
      * @param includedNamespaces What namespace to allow for resulting points - any if null or empty
      * @param includedTags What tags to all for resulting points - any if null or empty
      * @return Query edges for points, resulting edge lists are sorted based on occurrence value in descending order
      */
+    @Operation(summary = "Query edges for points, resulting edge lists are sorted based on occurrence value in descending order.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Map of each point id provided as key and with a list of its edges as value"),
             @ApiResponse(responseCode = "206", description = "Partial success"),
@@ -317,11 +327,11 @@ public class DataModelController {
         );
     }
 
-
     /**
      * @param modelId
      * @return The metadata for the model
      */
+    @Operation(summary = "The metadata for the model.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Model metadata"),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),
@@ -349,6 +359,7 @@ public class DataModelController {
     /**
      * @return String[n] | String[0] - Retrieve all tags of any points in model as one List
      */
+    @Operation(summary = "String[n] | String[0] - Retrieve all tags of any points in model as one List.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of tags sorted on how many points had that tag, in descending order."),
             @ApiResponse(responseCode = "500", description = "Internal model registry missing"),

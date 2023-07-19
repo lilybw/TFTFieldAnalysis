@@ -43,6 +43,7 @@ public class ModelTrainingController {
     @Autowired
     private DataRetrievalService dataRetrievalService;
 
+    @Operation(summary = "Static asset retrieval: Get TFT Server Targets.")
     /**
      * @return Static asset retrieval: Get TFT Server Targets
      */
@@ -65,7 +66,7 @@ public class ModelTrainingController {
         );
     }
 
-
+    @Operation(summary = "Static asset retrieval: Get RIOT Account Server Targets.")
     /**
      * @return Static asset retrieval: Get RIOT Account Server Targets
      */
@@ -88,6 +89,7 @@ public class ModelTrainingController {
         );
     }
 
+    @Operation(summary = "Cross confirmation: Validate account, returns player puuid.")
     /**
      * @param ign IGN of player for given server
      * @param server Server domain
@@ -132,6 +134,7 @@ public class ModelTrainingController {
         );
     }
 
+    @Operation(summary = "The id of the model when the training is complete (long-polling).")
     /**
      * @param id identifier of model to train
      * @param puuid personal uuid of base player for model
