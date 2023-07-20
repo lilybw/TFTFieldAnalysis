@@ -1,8 +1,11 @@
 package gbw.riot.tftfieldanalysis.core;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class DataPoint implements Comparable<DataPoint>{
+public class DataPoint implements Comparable<DataPoint>, Serializable {
+    static final long serialVersionUID = 192_839_824;
+
     private final int namespace;
     private Set<Integer> tags;
     private final int id = this.hashCode();

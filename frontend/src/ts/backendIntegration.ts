@@ -40,15 +40,14 @@ export async function deleteModel(id: number): Promise<DetailedResponse<string>>
 
 export async function getPoints(
     id: number,
-    namespace?: string,
+    namespaces?: string[],
     pointIds?: number[],
     tags?: string[]
 ): Promise<DetailedResponse<DataPointDTO[]>> {
-
     const url = new URL(`${__api_v1}/model/${id}/points`);
-    if (namespace) url.searchParams.append('namespace', namespace);
-    if (pointIds) url.searchParams.append('pointIds', pointIds.join(','));
-    if (tags) url.searchParams.append('tags', tags.join(','));
+    if (namespaces && namespaces.length > 0) url.searchParams.append('namespaces', namespaces.join(','));
+    if (pointIds && pointIds.length > 0) url.searchParams.append('pointIds', pointIds.join(','));
+    if (tags && tags.length > 0) url.searchParams.append('tags', tags.join(','));
 
     const response = await fetch(url.toString(), {method: "GET", mode: "cors"});
     const data = await response.json();

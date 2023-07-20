@@ -43,6 +43,20 @@ function App() {
       />
     );
   }
+  const [center, setCenter] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      const { innerWidth, innerHeight } = window;
+      if(innerWidth == 0 || innerHeight == 0) return;
+      setCenter({ x: innerWidth / 2, y: innerHeight / 2 });
+      console.log("Resize happened, center is: ", center.x, center.y)
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    //Used on Component.unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const goView = (modelId: number) => {
     updatePrev();
     setAppBody(
@@ -58,16 +72,6 @@ function App() {
     );
   }
 
-  useLayoutEffect(() => {
-    const handleResize = () => {
-      const { innerWidth, innerHeight } = window;
-      setCenter({ x: innerWidth / 2, y: innerHeight / 2 });
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    //Used on Component.unmount
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const [appBody, setAppBody] = React.useState<JSX.Element>(
     <Landing goBrowse={goBrowse} goCreate={goCreate} />
@@ -75,7 +79,6 @@ function App() {
   const [prevBody, setPrevBody] = React.useState<JSX.Element>(
     <Landing goBrowse={goBrowse} goCreate={goCreate} />
   )
-  const [center, setCenter] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
 
   return (
     <div className="App">

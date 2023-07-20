@@ -3,6 +3,7 @@ package gbw.riot.tftfieldanalysis.services;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -18,6 +19,10 @@ public class ModelRegistryService {
         return model;
     }
 
+    public void registerModels(Collection<DataModel> models){
+        models.forEach(this::registerModel);
+    }
+
     /**
      * Returns wether or not the model was already registered.
      */
@@ -27,6 +32,10 @@ public class ModelRegistryService {
         }
         registry.put(model.hashCode(), model);
         return true;
+    }
+
+    public HashMap<Integer,DataModel> __getRegistry(){
+        return registry;
     }
 
     public boolean deleteModel(int id) {

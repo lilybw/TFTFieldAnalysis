@@ -3,7 +3,7 @@ package gbw.riot.tftfieldanalysis.controllers;
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.core.Edge;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.ModelMetaData;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
@@ -377,7 +377,7 @@ public class DataModelController {
             return responses.getResponseOnModelNotFound(modelId);
         }
 
-        DataModel.ModelMetaData metadata = model.getMetaData();
+        ModelMetaData metadata = model.getMetaData();
         List<Integer> sortedTags = metadata.pointsWithTagCount()
                 .entrySet()
                 .stream()

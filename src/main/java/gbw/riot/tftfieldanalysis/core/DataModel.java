@@ -2,54 +2,13 @@ package gbw.riot.tftfieldanalysis.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
 import java.util.*;
 
-public class DataModel {
-    public record TrainingSession(LocalDateTime date, long msTaken){ }
-
-    public record ModelMetaData(
-            int modelId,
-            Set<Integer> matchIdsEvaluated,
-            List<TrainingSession> dateSecondsTrainingMap,
-            Map<CacheKeys,Long> cachedValues,
-            Map<Integer,Long> pointsPerNamespace,
-            Map<Integer,Long> pointsWithTagCount,
-            gbw.riot.tftfieldanalysis.core.compressors.Dictionary<String> dictionary
-    ) {
-        public static ModelMetaData create(int id){
-            return new ModelMetaData(
-                    id,
-                    new HashSet<>(),
-                    new ArrayList<>(),
-                    getCacheMap(),
-                    new HashMap<>(),
-                    new HashMap<>(),
-                    new Dictionary<>("")
-            );
-        }
-        private static Map<CacheKeys, Long> getCacheMap() {
-            Map<CacheKeys, Long> toReturn = new HashMap<>();
-            for(CacheKeys key : CacheKeys.values()){
-                toReturn.put(key, key.defaultValue);
-            }
-            return toReturn;
-        }
-    }
-
-    public enum CacheKeys {
-        MAX_OCCURRENCE_VALUE(-1),
-        EDGE_COUNT(0),
-        POINT_COUNT(0),
-        MIN_OCCURRENCE_VALUE(1);
-        public final long defaultValue;
-        CacheKeys(int defaultValue){
-            this.defaultValue = defaultValue;
-        }
-    }
+public class DataModel implements Serializable {
+    static final long serialVersionUID = 192_839_823L;
 
     @JsonProperty
     private final Map<Integer, Set<Edge>> pointEdgesMap = new HashMap<>();
@@ -64,7 +23,7 @@ public class DataModel {
     private final Map<Integer,Set<DataPoint>> pointsWithTagMap = new HashMap<>();
     @JsonIgnore
     private final Set<Edge> allEdges = new HashSet<>();
-    private final ModelMetaData metadata = ModelMetaData.create(this.hashCode());
+    private final ModelMetaData metadata = ModelMetaData.create();
 
     //Namespace operations
     public Set<DataPoint> getPointsInNamespace(String namespace){

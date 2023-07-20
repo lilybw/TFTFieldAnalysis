@@ -1,6 +1,9 @@
 package gbw.riot.tftfieldanalysis.core;
 
-public class Edge {
+import java.io.Serializable;
+
+public class Edge implements Serializable {
+    static final long serialVersionUID = 192_839_826;
 
     Edge(DataPoint pA, DataPoint pB){
         this.pointA = pA;

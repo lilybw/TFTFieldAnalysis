@@ -6,12 +6,11 @@ interface ModelMenuProps{
     modelId: number;
     setNamespace: (namespace: string, additive: boolean) => void;
     addOrSetTag: (tag: string, additive: boolean) => void;
-    addOrSetPointId: (pointId: number, additive: boolean) => void;
     namespaces: string[];
 }
 
 
-export default function ModelMenu({ modelId, setNamespace, addOrSetTag, addOrSetPointId, namespaces }: ModelMenuProps): JSX.Element {
+export default function ModelMenu({ modelId, setNamespace, addOrSetTag, namespaces }: ModelMenuProps): JSX.Element {
     const [sortedNamespaces, setSortedNamespaces] = React.useState<string[]>(namespaces);
     const [tags, setTags] = React.useState<string[]>([]);
     const [sortedTags, setSortedTags] = React.useState<string[]>([]);

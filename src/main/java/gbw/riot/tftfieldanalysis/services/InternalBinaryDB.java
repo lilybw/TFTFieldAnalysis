@@ -1,27 +1,98 @@
-package gbw.riot.tftfieldanalysis.core.environmentloading;
+package gbw.riot.tftfieldanalysis.services;
 
+import gbw.riot.tftfieldanalysis.core.BinaryDB;
 import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.environmentloading.FileUtil;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-public class InternalBinaryDB {
+@Service
+public class InternalBinaryDB implements BinaryDB {
 
     private static String root;
+    //Super Secret Proprietary File Type = binary stored java object
+    private final String SSPFT = ".bsjo";
     static {
         File file = new File(".");
         try{
             root = file.getCanonicalPath();
+            root += "/src/main/resources/dynamic";
         }catch (IOException e){
             System.err.println("SecretsService: Project Root Not Found");
             e.printStackTrace();
         }
     }
+    private record OnShutdownEntry(OnShutdownStore func, Priority prio, String identifier){}
 
+    private final List<OnShutdownEntry> onShutdownFunctions = new ArrayList<>();
+
+    public InternalBinaryDB(){
+        Runtime.getRuntime().addShutdownHook(
+                new Thread(this::onShutdown)
+        );
+    }
+
+    private void onShutdown(){
+        System.out.println("Running DB shutdown operations.");
+        for(OnShutdownEntry entry : onShutdownFunctions){
+            Exception error = entry.func().run(this);
+            if(error != null){
+                System.err.println(error.getMessage());
+
+            }
+        }
+    }
+
+    public boolean appendOperationOnShutdown(
+            OnShutdownStore func,
+            BinaryDB.Priority priority,
+            String identifier
+    ){
+        boolean toReturn = onShutdownFunctions.add(
+                new OnShutdownEntry(func, priority, identifier)
+        );
+        onShutdownFunctions.sort((e1,e2) ->
+             Integer.compare(e2.prio().intVal,e1.prio().intVal)
+        );
+
+        return toReturn;
+    }
+
+    public <T> ValueErrorTuple<Collection<T>,List<Exception>> retrieveCollection(
+            String directory, Class<T> clazz
+    ){
+        List<File> filesInDir = FileUtil.getFiles(root + "/" + directory, SSPFT);
+        Collection<T> toReturn = new ArrayList<>();
+        List<Exception> errors = new ArrayList<>();
+
+        for(File file : filesInDir){
+            ValueErrorTuple<T,Exception> result = retrieve(
+                    directory,
+                    FileUtil.removeExtension(file.getName()),
+                    clazz
+            );
+            if(result.hasError()) errors.add(result.error());
+            if(result.value() != null) toReturn.add(result.value());
+        }
+
+        return ValueErrorTuple.of(
+                toReturn,
+                errors.isEmpty() ? null : errors
+        );
+    }
+
+    @SuppressWarnings("unchecked")
     public <T> ValueErrorTuple<T,Exception> retrieve(String path, String identifier, Class<T> clazz){
         return getManagedObjectInputStreamThenDo(
-                path + "/" + identifier + ".bin",
+                root + "/" + path + "/" + identifier + SSPFT,
                 (ois) -> {
                     AtomicReference<T> duckTyped = new AtomicReference<>();
                     Object any = ois.readObject();
@@ -51,7 +122,7 @@ public class InternalBinaryDB {
             return ValueErrorTuple.error(new NullPointerException("Why would you store a null object?"));
         }
         return getManagedObjectOutputStreamThenDo(
-                path + "/" + identifierRetriever.apply(object) + ".bin",
+                root + "/" + path + "/" + identifierRetriever.apply(object) + SSPFT,
                 (oos) -> {
                     oos.writeObject(object);
                     return object;
@@ -78,6 +149,14 @@ public class InternalBinaryDB {
        );
     }
 
+    /**
+     * If the ObjectInputStream cannot be retrieved, the function is not run.
+     * Gets the stream to the path, runs the function then closes the stream
+     * @param path complete path of file - with extension
+     * @param thenDo function to run using the ObjectInputStream
+     * @param <T> type param
+     * @return any error.
+     */
     private <T> ValueErrorTuple<T,Exception> getManagedObjectInputStreamThenDo(
             String path,
             ValueErrorTuple.OneParameterTupleRetriever<
@@ -100,6 +179,7 @@ public class InternalBinaryDB {
             String path,
             ValueErrorTuple.OneParameterTupleRetriever<T,FileOutputStream,Exception> thenDo
     ){
+        FileUtil.createIfNotExists(path);
         final FileOutputStream[] fosArray = new FileOutputStream[1];
         Exception outputStreamCreationResult = ValueErrorTuple.encapsulate(
                 () -> {
@@ -128,6 +208,14 @@ public class InternalBinaryDB {
         return runResult;
     }
 
+    /**
+     * If the retrieval of the input stream fail, the function is not run
+     * Opens a stream to the path, runs the function and closes the stream
+     * @param path full path of file including extension
+     * @param thenDo function to run using said stream
+     * @param <T> type param
+     * @return Any error and the result of the provided function
+     */
     private <T> ValueErrorTuple<T,Exception> getManagedFileInputStreamThenDo(
             String path,
             ValueErrorTuple.OneParameterTupleRetriever<T,FileInputStream,Exception> thenDo

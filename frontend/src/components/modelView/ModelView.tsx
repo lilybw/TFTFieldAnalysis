@@ -1,8 +1,7 @@
 import React from 'react';
 import './ModelView.css';
-import { DataPointDTO, EdgeDTO, ModelDTO, ModelMetaDataDTO } from '../../ts/types';
-import { getEdgeSets, getModel, getModelMetadata, getNamespaces, getPoints } from '../../ts/backendIntegration';
-import { toList } from '../../ts/dataTypeTranslator';
+import { DataPointDTO, ModelMetaDataDTO } from '../../ts/types';
+import { getModelMetadata, getNamespaces, getPoints } from '../../ts/backendIntegration';
 import { Backupable } from '../../ts/component';
 import ModelMenu from './modelMenu/ModelMenu';
 import DataPointViewPort from './dataPointViewPort/DataPointViewPort';
@@ -14,7 +13,7 @@ interface ModelViewProps extends Backupable{
 }
 
 export default function ModelView({modelId, backup, center}: ModelViewProps): JSX.Element {
-    const [selectedNamespace, setSelectedNamespace] = React.useState<string>("");
+    const [selectedNamespaces, setSelectedNamespaces] = React.useState<string[]>([]);
     const [selectedPointIds, setSelectedPointIds] = React.useState<number[]>([]);
     const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
     const [viewedPoints, setViewedPoints] = React.useState<DataPointDTO[]>([]);
@@ -24,12 +23,12 @@ export default function ModelView({modelId, backup, center}: ModelViewProps): JS
     const [namespaces, setNamespaces] = React.useState<string[]>([]);
 
     React.useEffect(() => {
-        getPoints(modelId, selectedNamespace, selectedPointIds, selectedTags)
-        .then(pointsResponse => {
+        getPoints(modelId, selectedNamespaces, selectedPointIds, selectedTags)
+            .then(pointsResponse => {
             setViewedPoints(pointsResponse.data);
             setSortedViewedPoints(pointsResponse.data);
         })
-    }, [selectedNamespace, selectedTags, selectedPointIds])
+    }, [selectedNamespaces, selectedTags, selectedPointIds])
 
     React.useEffect(() => {
         getModelMetadata(modelId).then(response => {
@@ -46,13 +45,13 @@ export default function ModelView({modelId, backup, center}: ModelViewProps): JS
     const clearSelection = () => {
         setSelectedPointIds([]);
         setSelectedTags([]);
-        setSelectedNamespace("");
+        setSelectedNamespaces([]);
     }
-    const selectNamespace = (namespace: string, additive: boolean) => {
+    const addOrSetNamespace = (namespace: string, additive: boolean) => {
         if(!additive){
             clearSelection();
         }
-        setSelectedNamespace(namespace);
+        setSelectedNamespaces([namespace, ...selectedNamespaces]);
     }
     const addOrSetTag = (tag: string, additive: boolean) => {
         if(!additive){
@@ -70,9 +69,8 @@ export default function ModelView({modelId, backup, center}: ModelViewProps): JS
     return (
         <div className="ModelView">
             <ModelMenu modelId={modelId} 
-                setNamespace={selectNamespace} 
+                setNamespace={addOrSetNamespace} 
                 addOrSetTag={addOrSetTag}
-                addOrSetPointId={addOrSetPointId}
                 namespaces={namespaces}
             />
             <DataPointViewPort 

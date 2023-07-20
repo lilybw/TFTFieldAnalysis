@@ -1,9 +1,6 @@
 package gbw.riot.tftfieldanalysis.services;
 
-import gbw.riot.tftfieldanalysis.core.DataModel;
-import gbw.riot.tftfieldanalysis.core.DataPoint;
-import gbw.riot.tftfieldanalysis.core.MatchData;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.*;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,7 +95,7 @@ public class ModelTrainingService {
                 excludedMatches
         );
         model.getMetaData().dateSecondsTrainingMap().add(
-                new DataModel.TrainingSession(dateStart, System.currentTimeMillis() - timeA)
+                new TrainingSession(dateStart, System.currentTimeMillis() - timeA)
         );
         return result;
     }

@@ -2,9 +2,11 @@ package gbw.riot.tftfieldanalysis.core.compressors;
 
 import jakarta.validation.constraints.NotNull;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Dictionary<T> {
+public class Dictionary<T> implements Serializable {
+    static final long serialVersionUID = 192_839_801;
 
     private final Map<Integer,T> dictionary = new HashMap<>();
     private final Map<T,Integer> theOtherWay = new HashMap<>();
