@@ -12,17 +12,14 @@ import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelTrainingService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.constraints.Max;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -43,10 +40,10 @@ public class ModelTrainingController {
     @Autowired
     private DataRetrievalService dataRetrievalService;
 
-    @Operation(summary = "Static asset retrieval: Get TFT Server Targets.")
     /**
      * @return Static asset retrieval: Get TFT Server Targets
      */
+    @Operation(summary = "Static asset retrieval: Get TFT Server Targets.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "String array of valid TFT servers.")
     })
@@ -66,10 +63,10 @@ public class ModelTrainingController {
         );
     }
 
-    @Operation(summary = "Static asset retrieval: Get RIOT Account Server Targets.")
     /**
      * @return Static asset retrieval: Get RIOT Account Server Targets
      */
+    @Operation(summary = "Static asset retrieval: Get RIOT Account Server Targets.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "String array of valid account servers.")
     })
@@ -89,12 +86,12 @@ public class ModelTrainingController {
         );
     }
 
-    @Operation(summary = "Cross confirmation: Validate account, returns player puuid.")
     /**
      * @param ign IGN of player for given server
      * @param server Server domain
      * @return Cross confirmation: Validate account, returns player puuid
      */
+    @Operation(summary = "Cross confirmation: Validate account, returns player puuid.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Player puuid"),
             @ApiResponse(responseCode = "404", description = "Invalid account server target"),
@@ -134,13 +131,13 @@ public class ModelTrainingController {
         );
     }
 
-    @Operation(summary = "The id of the model when the training is complete (long-polling).")
     /**
      * @param id identifier of model to train
      * @param puuid personal uuid of base player for model
      * @param config TrainingConfig
      * @return The id of the model when the training is complete (long-polling)
      */
+    @Operation(summary = "The id of the model when the training is complete (long-polling).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Model id"),
             @ApiResponse(responseCode = "404", description = "Unknown model"),

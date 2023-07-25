@@ -83,11 +83,9 @@ TODOs.md
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
-secrets.txt
-secrets.txt
+src/main/resources/dynamic

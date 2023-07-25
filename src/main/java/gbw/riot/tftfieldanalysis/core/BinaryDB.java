@@ -21,7 +21,7 @@ public interface BinaryDB {
         MID(100),
         HIGH(10),
         SYSTEM_CRITICAL(1);
-        public int intVal;
+        public final int intVal;
         Priority(int intVal){
             this.intVal = intVal;
         }

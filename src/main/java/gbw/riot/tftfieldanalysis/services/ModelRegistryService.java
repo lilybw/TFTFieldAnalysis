@@ -15,7 +15,7 @@ public class ModelRegistryService {
     public DataModel createModel()
     {
         DataModel model = new DataModel();
-        registry.put(model.hashCode(), model);
+        registry.put(model.getMetaData().modelId(), model);
         return model;
     }
 
@@ -27,10 +27,10 @@ public class ModelRegistryService {
      * Returns wether or not the model was already registered.
      */
     public boolean registerModel(DataModel model){
-        if(registry.get(model.hashCode()) != null){
+        if(registry.get(model.getMetaData().modelId()) != null){
             return false;
         }
-        registry.put(model.hashCode(), model);
+        registry.put(model.getMetaData().modelId(), model);
         return true;
     }
 

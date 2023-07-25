@@ -63,11 +63,13 @@ export async function getNamespaces(id: number): Promise<DetailedResponse<string
 
 }
 
-export async function getEdgeSets(id: number, points: number[]): 
+export async function getEdgeSets(id: number, points: number[], includedTags?: string[], includedNamespaces?: string[]): 
     Promise<DetailedResponse<{[key: number]: EdgeDTO[]}>> {
 
     const url = new URL(`${__api_v1}/model/${id}/edges`);
     url.searchParams.append('points', points.join(','));
+    if(includedNamespaces) url.searchParams.append('includedNamespaces', includedNamespaces.join(","));
+    if(includedTags) url.searchParams.append('includedTags', includedTags.join(","));
 
     const response = await fetch(url.toString(), {method: "GET", mode: "cors"});
     const data = await response.json();

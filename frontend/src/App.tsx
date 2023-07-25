@@ -43,10 +43,11 @@ function App() {
       />
     );
   }
-  const [center, setCenter] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
+  const [center, setCenter] = React.useState<{ x: number, y: number }>({ x: 1000, y: 1000 });
   useLayoutEffect(() => {
     const handleResize = () => {
       const { innerWidth, innerHeight } = window;
+      if(!innerWidth || !innerHeight) return;
       if(innerWidth == 0 || innerHeight == 0) return;
       setCenter({ x: innerWidth / 2, y: innerHeight / 2 });
       console.log("Resize happened, center is: ", center.x, center.y)

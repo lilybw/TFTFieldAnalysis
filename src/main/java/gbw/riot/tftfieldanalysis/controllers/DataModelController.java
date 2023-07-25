@@ -328,7 +328,7 @@ public class DataModelController {
     }
 
     /**
-     * @param modelId
+     * @param modelId id of model
      * @return The metadata for the model
      */
     @Operation(summary = "The metadata for the model.")

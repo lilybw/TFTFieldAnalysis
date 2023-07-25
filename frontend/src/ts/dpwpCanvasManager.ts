@@ -12,36 +12,36 @@ const calcVarianceMod = (i: number, varianceSteps: number) => {
  * @param canvas canvas to draw on
  * @returns the absolute coordinates of the end of each edge in relation to the center of the canvas
  */
-export const drawEdges = async (ogPointId: number, properties: DrawCallProperties
+export const drawEdges = async (ogPointId: number, {localOccMin, localOccMax, maxLineWidth, processedEdges, canvasRef, transform}: DrawCallProperties
     ): Promise<{[key: number]: {x:number,y:number}}> => {
 
-    if (!properties.canvasRef) return {};
-    const ctx = properties.canvasRef.getContext('2d');
+    if (!canvasRef) return {};
+    const ctx = canvasRef.getContext('2d');
     if(!ctx) return {};
-    ctx.clearRect(0, 0, properties.canvasRef.width, properties.canvasRef.height);
+    ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
 
     const center = { 
-        x: properties.transform.x + (properties.transform.w / 2), 
-        y: properties.transform.y + (properties.transform.h / 2)
+        x: canvasRef.width / 2, 
+        y: canvasRef.height / 2
     };
-    const length = Math.min(properties.transform.w, properties.transform.h) / 2.5;
+    const length = Math.min(transform.w, transform.h) / 2.5;
 
-    const angleIncrement = 2 * Math.PI / properties.processedEdges.length;
+    const angleIncrement = 2 * Math.PI / processedEdges.length;
     const angleOffset = .5 * Math.PI; // Making 0° be at the top of the circle
 
     ctx.strokeStyle = 'white';
-    const varianceSteps = Math.floor(properties.processedEdges.length / 13);
+    const varianceSteps = Math.floor(processedEdges.length / 13);
 
     const toReturn: {[key: number]: {x:number,y:number}} = {};
 
-    for (let i = 0; i < properties.processedEdges.length; i++) {
-        const edge = properties.processedEdges[i];
+    for (let i = 0; i < processedEdges.length; i++) {
+        const edge = processedEdges[i];
 
         const varianceModifier = calcVarianceMod(i, varianceSteps);
 
         const end = {
-            x: center.x + Math.cos(angleIncrement * i - angleOffset) * (length - varianceModifier * properties.transform.w),
-            y: center.y + Math.sin(angleIncrement * i - angleOffset) * (length - varianceModifier * properties.transform.h)
+            x: center.x + Math.cos(angleIncrement * i - angleOffset) * (length - varianceModifier * canvasRef.width),
+            y: center.y + Math.sin(angleIncrement * i - angleOffset) * (length - varianceModifier * canvasRef.height)
         };
         
         if(edge.pointA == ogPointId) {
@@ -50,7 +50,7 @@ export const drawEdges = async (ogPointId: number, properties: DrawCallPropertie
             toReturn[edge.pointA] = end;
         }
 
-        ctx.lineWidth = properties.maxLineWidth * (edge.occurrence / properties.localOccMax);
+        ctx.lineWidth = maxLineWidth * (edge.occurrence / localOccMax);
         ctx.beginPath();
         ctx.moveTo(center.x, center.y);
         ctx.lineTo(end.x, end.y);

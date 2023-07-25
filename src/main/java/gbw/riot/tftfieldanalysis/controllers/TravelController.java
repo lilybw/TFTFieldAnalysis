@@ -1,21 +1,14 @@
 package gbw.riot.tftfieldanalysis.controllers;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
-import gbw.riot.tftfieldanalysis.core.DataPoint;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
-import gbw.riot.tftfieldanalysis.responseUtil.dtos.DataPointDTO;
 import gbw.riot.tftfieldanalysis.responseUtil.dtos.TravelBranchOptionDTO;
-import gbw.riot.tftfieldanalysis.responseUtil.dtos.TravelContextSyntaxDeclaration;
 import gbw.riot.tftfieldanalysis.services.DefaultResponseRegistryService;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -15,16 +15,14 @@ interface DataPointViewPort {
     center: {x: number, y: number}
 }
 
-
-
-const getEmptyProperties = (localOccMin?: number, localOccMax?: number, processedEdges?: EdgeDTO[]): DrawCallProperties => {
+const getEmptyProperties = (localOccMin?: number, localOccMax?: number, processedEdges?: EdgeDTO[], canvas?: HTMLCanvasElement, transform?: ComponentTransform): DrawCallProperties => {
     return {
         localOccMin: localOccMin || 0,
         localOccMax: localOccMax || 1,
         processedEdges: processedEdges || [],
-        maxLineWidth: 0,
-        canvasRef: undefined,
-        transform: {x: 1, y: 1, w: 1, h: 1}
+        maxLineWidth: 10,
+        canvasRef: canvas,
+        transform: transform || {x: 1, y: 1, w: 1, h: 1}
 
     }
 }
@@ -36,11 +34,16 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const [resultingPointOffsets, setResultingPointOffsets] = React.useState<{ [key: number]: {x: number, y: number} }>({});
     const [edgeMinOccurrence, setEdgeMinOccurrence] = React.useState<number>(1);
-    const [ignoredNamespaces, setIgnoredNamespaces] = React.useState<string[]>([]);
+    const [includedNamespaces, setIncludedNamespaces] = React.useState<string[]>([]);
     
     const xy = Math.max(center.x, center.y);
     const [canvasTransform, setCanvasTransform] = 
-        React.useState<ComponentTransform>({x: xy, y: xy, w: xy, h: xy});
+        React.useState<ComponentTransform>({
+            x: center.x - (xy / 2),
+            y: 0,
+            w: xy,
+            h: xy
+        });
     
     const resetCollections = () => {
         setResultingPoints({});
@@ -54,19 +57,18 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
         let localOccMax = 1;
 
         for(const edge of edges){
-            const pointA = resultingPoints[edge.pointA];
-            const pointB = resultingPoints[edge.pointB];
+            const resultingPointId = edge.pointA == point?.id ? edge.pointB : edge.pointA;
+            const pointA = resultingPoints[resultingPointId];
 
-            if (pointA == null || pointB == null) continue;
+            if (pointA == null) continue;
             if (edge.occurrence < edgeMinOccurrence) continue;
-            if (containsAnyGen(ignoredNamespaces, [pointA, pointB], (r,t) => r == t.namespace)) continue;
 
             processed.push(edge);
             localOccMin = Math.min(localOccMin, edge.occurrence);
             localOccMax = Math.max(localOccMax, edge.occurrence);
         }
 
-        return getEmptyProperties(localOccMin, localOccMax, processed);
+        return getEmptyProperties(localOccMin, localOccMax, processed, canvasRef.current!, canvasTransform);
     }
 
     const onDrawCall = async (edges: EdgeDTO[]): Promise<{ [key: number]: { x: number, y: number } }> => {
@@ -81,7 +83,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
         resetCollections();
 
         const loadEdgesAndResultingPoints = async () => {
-            let edges = await getEdgeSets(modelId, [point.id]).then(response => {
+            let edges = await getEdgeSets(modelId, [point.id],undefined,includedNamespaces).then(response => {
                 if(response.data == null) return;
                 return response.data[point.id];
             });
@@ -127,23 +129,20 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
         }else{
             return(
                 <div className="dpwp-canvas-container">
-                <canvas className="dpwp-canvas" id="dpwp-canvas" 
-                    ref={canvasRef}
-                    width={center.x} height={center.y}>
+                <canvas className="dpwp-canvas" id="dpwp-canvas" ref={canvasRef}
+                    width="1000" height="1000">
                 </canvas>
-                <button className="dpwp-point"
-                    onClick={() => selectPoint(point)}
-                >
+                <button className="dpwp-point center" onClick={() => selectPoint(point)}>
                     <p>{point.namespace}</p>
                     <p>{point.id}</p>
                     <p>{point.tags}</p>
                 </button>
-                {duckFilter(Object.keys(resultingPointOffsets), DuckType.NUMBER).map((pointId) => {
+                {Object.keys(resultingPointOffsets).map((pointId) => {
                     const resultPoint = resultingPoints[Number(pointId)];
 
                     //since it may happen that the resulting points hasn't been loaded yet
                     if(resultPoint == null || resultPoint == undefined) return;
-                    if(contains(ignoredNamespaces, resultPoint.namespace, (r,t) => r == t)) return;
+                    if(contains(includedNamespaces, resultPoint.namespace, (r,t) => r == t)) return;
                     console.log(canvasTransform);
                     return(
                         <button className="dpwp-point-resulting" key={resultPoint.id}
@@ -159,7 +158,6 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                         </button>
                     )
                 })}
-                
                 </div>
             )
         }
@@ -183,7 +181,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                 </div>
                 </div>
                 <div>
-                <h3>Ignored Namespaces</h3>
+                <h3>Included Namespaces</h3>
                 <div className="vertical-flex">
                     {namespaces.map((namespace, index) => {
                         return (
@@ -193,9 +191,9 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                                     onClick={e => {
                                         const checkbox = e.target as HTMLInputElement;
                                         if (checkbox.checked){
-                                            setIgnoredNamespaces(notInPlaceAdd(ignoredNamespaces, namespace));
+                                            setIncludedNamespaces(notInPlaceAdd(includedNamespaces, namespace));
                                         }else{
-                                            setIgnoredNamespaces(notInPlaceRemoveAll(ignoredNamespaces, namespace));
+                                            setIncludedNamespaces(notInPlaceRemoveAll(includedNamespaces, namespace));
                                         }
                                     }}
                                 />

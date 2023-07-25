@@ -6,10 +6,8 @@ import gbw.riot.tftfieldanalysis.core.environmentloading.FileUtil;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
