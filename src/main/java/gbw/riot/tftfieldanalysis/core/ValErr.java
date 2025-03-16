@@ -1,7 +1,7 @@
 package gbw.riot.tftfieldanalysis.core;
 
 //Because GoLang rules and Java kinda sucks...
-public record ValueErrorTuple<T, R>(T value, R error) {
+public record ValErr<T, R>(T value, R error) {
 
     @FunctionalInterface
     public interface VoidTupleRetriever<M extends Throwable> {
@@ -22,16 +22,16 @@ public record ValueErrorTuple<T, R>(T value, R error) {
     }
 
 
-    public static <T, R> ValueErrorTuple<T, R> value(T value) {
-        return new ValueErrorTuple<>(value, null);
+    public static <T, R> ValErr<T, R> value(T value) {
+        return new ValErr<>(value, null);
     }
 
-    public static <T, R> ValueErrorTuple<T, R> error(R error) {
-        return new ValueErrorTuple<>(null, error);
+    public static <T, R> ValErr<T, R> error(R error) {
+        return new ValErr<>(null, error);
     }
 
-    public static <T, R> ValueErrorTuple<T, R> of(T value, R error) {
-        return new ValueErrorTuple<>(value, error);
+    public static <T, R> ValErr<T, R> of(T value, R error) {
+        return new ValErr<>(value, error);
     }
 
     @SuppressWarnings("unchecked")
@@ -45,7 +45,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T, R extends Throwable> ValueErrorTuple<T, R> encapsulate(ZeroParameterTupleRetriever<T, R> retriever) {
+    public static <T, R extends Throwable> ValErr<T, R> encapsulate(ZeroParameterTupleRetriever<T, R> retriever) {
         T value = null;
         try {
             value = retriever.run();
@@ -55,7 +55,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         return of(value, null);
     }
     @SuppressWarnings("unchecked")
-    public static <T, N, R extends Throwable> ValueErrorTuple<T, R> encapsulate(OneParameterTupleRetriever<T, N, R> retriever, N value) {
+    public static <T, N, R extends Throwable> ValErr<T, R> encapsulate(OneParameterTupleRetriever<T, N, R> retriever, N value) {
         T result = null;
         try {
             result = retriever.run(value);
@@ -65,7 +65,7 @@ public record ValueErrorTuple<T, R>(T value, R error) {
         return of(result, null);
     }
     @SuppressWarnings("unchecked")
-    public static <T,N,L,R extends Throwable> ValueErrorTuple<T,R> encapsulate(TwoParameterTupleRetriever<T,N,L,R> retriever, N var1, L var2){
+    public static <T,N,L,R extends Throwable> ValErr<T,R> encapsulate(TwoParameterTupleRetriever<T,N,L,R> retriever, N var1, L var2){
         T result = null;
         try {
             result = retriever.run(var1,var2);

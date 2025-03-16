@@ -2,11 +2,7 @@ package gbw.riot.tftfieldanalysis.services;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.DataPoint;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
-import gbw.riot.tftfieldanalysis.core.compressors.Dictionary;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
-import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;

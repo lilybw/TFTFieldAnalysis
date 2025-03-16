@@ -1,6 +1,6 @@
 package gbw.riot.tftfieldanalysis.core.travel;
 
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 
 public class Range {
 
@@ -42,13 +42,13 @@ public class Range {
         return value <= max && value >= min;
     }
 
-    public static ValueErrorTuple<Range,Exception> of(int[] range){
-        return ValueErrorTuple.encapsulate(() -> new Range((float) range[0],(float) range[1]));
+    public static ValErr<Range,Exception> of(int[] range){
+        return ValErr.encapsulate(() -> new Range((float) range[0],(float) range[1]));
     }
 
-    public static ValueErrorTuple<Range,Exception> of(Object[] range){
+    public static ValErr<Range,Exception> of(Object[] range){
         //Dicey, but legal as any ClassCastException, NumberFormatException... etc is caught by encapsulate
-        return ValueErrorTuple.encapsulate(
+        return ValErr.encapsulate(
                 () -> new Range(
                         Float.parseFloat((String) range[0]),
                         Float.parseFloat((String) range[1])
@@ -56,7 +56,7 @@ public class Range {
         );
     }
 
-    public static ValueErrorTuple<Range,Exception> of(String range, String separator){
+    public static ValErr<Range,Exception> of(String range, String separator){
         return Range.of(range.split(separator));
     }
 

@@ -112,8 +112,8 @@ export async function getServerLocations(): Promise<DetailedResponse<string[]>> 
     return data;
 }
 
-export async function validateIGNandGetPUUID(ign: string, server: string): Promise<DetailedResponse<string>> {
-    const response = await fetch(`${__api_v1}/train/validate?ign=${ign}&server=${server}`, {method: "GET", mode: "cors"});
+export async function validateIGNandGetPUUID(ign: string, server: string, tagLine: string): Promise<DetailedResponse<string>> {
+    const response = await fetch(`${__api_v1}/train/validate?ign=${ign}&server=${server}&tagLine=${tagLine}`, {method: "GET", mode: "cors"});
     const data = await response.json();
     return data;
 }

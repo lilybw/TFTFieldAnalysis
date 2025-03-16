@@ -1,7 +1,7 @@
 package gbw.riot.tftfieldanalysis.services;
 
 import gbw.riot.tftfieldanalysis.core.BinaryDB;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 import gbw.riot.tftfieldanalysis.core.environmentloading.FileUtil;
 import org.springframework.stereotype.Service;
 
@@ -64,7 +64,7 @@ public class InternalBinaryDB implements BinaryDB {
         return toReturn;
     }
 
-    public <T> ValueErrorTuple<Collection<T>,List<Exception>> retrieveCollection(
+    public <T> ValErr<Collection<T>,List<Exception>> retrieveCollection(
             String directory, Class<T> clazz
     ){
         List<File> filesInDir = FileUtil.getFiles(root + "/" + directory, SSPFT);
@@ -72,7 +72,7 @@ public class InternalBinaryDB implements BinaryDB {
         List<Exception> errors = new ArrayList<>();
 
         for(File file : filesInDir){
-            ValueErrorTuple<T,Exception> result = retrieve(
+            ValErr<T,Exception> result = retrieve(
                     directory,
                     FileUtil.removeExtension(file.getName()),
                     clazz
@@ -81,20 +81,20 @@ public class InternalBinaryDB implements BinaryDB {
             if(result.value() != null) toReturn.add(result.value());
         }
 
-        return ValueErrorTuple.of(
+        return ValErr.of(
                 toReturn,
                 errors.isEmpty() ? null : errors
         );
     }
 
     @SuppressWarnings("unchecked")
-    public <T> ValueErrorTuple<T,Exception> retrieve(String path, String identifier, Class<T> clazz){
+    public <T> ValErr<T,Exception> retrieve(String path, String identifier, Class<T> clazz){
         return getManagedObjectInputStreamThenDo(
                 root + "/" + path + "/" + identifier + SSPFT,
                 (ois) -> {
                     AtomicReference<T> duckTyped = new AtomicReference<>();
                     Object any = ois.readObject();
-                    ValueErrorTuple.encapsulate(() -> {
+                    ValErr.encapsulate(() -> {
                         duckTyped.set((T) any);
                     });
                     return duckTyped.get();
@@ -111,13 +111,13 @@ public class InternalBinaryDB implements BinaryDB {
      * @return [T | null, Exception | null]
 
      */
-    public <T> ValueErrorTuple<T,Exception> store(
+    public <T> ValErr<T,Exception> store(
             String path,
             T object,
             Function<T,String> identifierRetriever
     ) {
         if(object == null){
-            return ValueErrorTuple.error(new NullPointerException("Why would you store a null object?"));
+            return ValErr.error(new NullPointerException("Why would you store a null object?"));
         }
         return getManagedObjectOutputStreamThenDo(
                 root + "/" + path + "/" + identifierRetriever.apply(object) + SSPFT,
@@ -128,9 +128,9 @@ public class InternalBinaryDB implements BinaryDB {
         );
     }
 
-    private <T> ValueErrorTuple<T,Exception> getManagedObjectOutputStreamThenDo(
+    private <T> ValErr<T,Exception> getManagedObjectOutputStreamThenDo(
             String path,
-            ValueErrorTuple.OneParameterTupleRetriever<
+            ValErr.OneParameterTupleRetriever<
                     T,
                     ObjectOutputStream,
                     Exception> thenDo
@@ -155,9 +155,9 @@ public class InternalBinaryDB implements BinaryDB {
      * @param <T> type param
      * @return any error.
      */
-    private <T> ValueErrorTuple<T,Exception> getManagedObjectInputStreamThenDo(
+    private <T> ValErr<T,Exception> getManagedObjectInputStreamThenDo(
             String path,
-            ValueErrorTuple.OneParameterTupleRetriever<
+            ValErr.OneParameterTupleRetriever<
                     T,
                     ObjectInputStream,
                     Exception> thenDo
@@ -173,34 +173,34 @@ public class InternalBinaryDB implements BinaryDB {
         );
     }
 
-    private <T> ValueErrorTuple<T,Exception> getManagedFileOutputStreamThenDo(
+    private <T> ValErr<T,Exception> getManagedFileOutputStreamThenDo(
             String path,
-            ValueErrorTuple.OneParameterTupleRetriever<T,FileOutputStream,Exception> thenDo
+            ValErr.OneParameterTupleRetriever<T,FileOutputStream,Exception> thenDo
     ){
         FileUtil.createIfNotExists(path);
         final FileOutputStream[] fosArray = new FileOutputStream[1];
-        Exception outputStreamCreationResult = ValueErrorTuple.encapsulate(
+        Exception outputStreamCreationResult = ValErr.encapsulate(
                 () -> {
                     fosArray[0] = new FileOutputStream(path);
                 }
 
         );
         if(outputStreamCreationResult != null){
-            ValueErrorTuple.encapsulate(() -> fosArray[0].close());
-            return ValueErrorTuple.error(outputStreamCreationResult);
+            ValErr.encapsulate(() -> fosArray[0].close());
+            return ValErr.error(outputStreamCreationResult);
         }
         FileOutputStream fos = fosArray[0];
 
-        ValueErrorTuple<T,Exception> runResult = ValueErrorTuple.encapsulate(
+        ValErr<T,Exception> runResult = ValErr.encapsulate(
                 () -> thenDo.run(fos)
         );
 
-        Exception inputStreamCloseResult = ValueErrorTuple.encapsulate(() -> {
+        Exception inputStreamCloseResult = ValErr.encapsulate(() -> {
             fos.close();
             fos.flush();
         });
         if(inputStreamCloseResult != null){
-            return ValueErrorTuple.of(runResult.value(),inputStreamCloseResult);
+            return ValErr.of(runResult.value(),inputStreamCloseResult);
         }
 
         return runResult;
@@ -214,30 +214,30 @@ public class InternalBinaryDB implements BinaryDB {
      * @param <T> type param
      * @return Any error and the result of the provided function
      */
-    private <T> ValueErrorTuple<T,Exception> getManagedFileInputStreamThenDo(
+    private <T> ValErr<T,Exception> getManagedFileInputStreamThenDo(
             String path,
-            ValueErrorTuple.OneParameterTupleRetriever<T,FileInputStream,Exception> thenDo
+            ValErr.OneParameterTupleRetriever<T,FileInputStream,Exception> thenDo
     ){
         final FileInputStream[] fisArray = new FileInputStream[1];
-        Exception outputStreamCreationResult = ValueErrorTuple.encapsulate(
+        Exception outputStreamCreationResult = ValErr.encapsulate(
                 () -> {
                     fisArray[0] = new FileInputStream(path); //Well yes, because this solution is more flexible than "finally"
                 }
 
         );
         if(outputStreamCreationResult != null){
-            ValueErrorTuple.encapsulate(() -> fisArray[0].close()); //^ requires this line tho
-            return ValueErrorTuple.error(outputStreamCreationResult);
+            ValErr.encapsulate(() -> fisArray[0].close()); //^ requires this line tho
+            return ValErr.error(outputStreamCreationResult);
         }
         FileInputStream fos = fisArray[0];
 
-        ValueErrorTuple<T,Exception> runResult = ValueErrorTuple.encapsulate(
+        ValErr<T,Exception> runResult = ValErr.encapsulate(
                 () -> thenDo.run(fos)
         );
 
-        Exception inputStreamCloseResult = ValueErrorTuple.encapsulate(fos::close);
+        Exception inputStreamCloseResult = ValErr.encapsulate(fos::close);
         if(inputStreamCloseResult != null){
-            return ValueErrorTuple.of(runResult.value(),inputStreamCloseResult);
+            return ValErr.of(runResult.value(),inputStreamCloseResult);
         }
 
         return runResult;

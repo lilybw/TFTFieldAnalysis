@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
@@ -53,7 +52,7 @@ public class ModelTrainingService {
     @Autowired
     private DataRetrievalService retrievalService;
 
-    public ValueErrorTuple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config){
+    public ValErr<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config){
         if(config == null || config.patch == null){
             return run(
                     model,
@@ -70,7 +69,7 @@ public class ModelTrainingService {
             );
     }
 
-    public ValueErrorTuple<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config, ExcludeMatchFunction excludeFunc){
+    public ValErr<Set<String>,Exception> run(DataModel model, String puuid, TrainingConfiguration config, ExcludeMatchFunction excludeFunc){
         return run(
                 model,
                 config,
@@ -80,15 +79,15 @@ public class ModelTrainingService {
         );
     }
 
-    public ValueErrorTuple<Set<String>,Exception> run(DataModel model, TrainingConfiguration config, String puuid, ExcludeMatchFunction excludeFunc, Set<String> excludedMatches){
+    public ValErr<Set<String>,Exception> run(DataModel model, TrainingConfiguration config, String puuid, ExcludeMatchFunction excludeFunc, Set<String> excludedMatches){
         Exception configError = verifyConfig(config);
         if(configError != null){
-            return ValueErrorTuple.error(configError);
+            return ValErr.error(configError);
         }
 
         long timeA = System.currentTimeMillis();
         LocalDateTime dateStart = LocalDateTime.now();
-        ValueErrorTuple<Set<String>,Exception> result = retrievalService.start(
+        ValErr<Set<String>,Exception> result = retrievalService.start(
                 config,
                 puuid,
                 match -> parseMatch(match, model, excludeFunc),

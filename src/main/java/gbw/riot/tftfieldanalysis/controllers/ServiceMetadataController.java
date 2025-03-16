@@ -1,6 +1,6 @@
 package gbw.riot.tftfieldanalysis.controllers;
 
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.services.WebServiceMetadataService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +27,7 @@ public class ServiceMetadataController {
     @GetMapping("/version")
     public @ResponseBody ResponseEntity<DetailedResponse<String>> getServiceVersion()
     {
-        ValueErrorTuple<String,Exception> result = serviceData.getVersion();
+        ValErr<String,Exception> result = serviceData.getVersion();
         if(result.error() != null){
             return new ResponseEntity<>(
                     DetailedResponse.success(

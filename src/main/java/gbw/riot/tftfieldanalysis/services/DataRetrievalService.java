@@ -2,10 +2,11 @@ package gbw.riot.tftfieldanalysis.services;
 
 import gbw.riot.tftfieldanalysis.core.MatchData;
 import gbw.riot.tftfieldanalysis.core.ServerLocations;
-import gbw.riot.tftfieldanalysis.core.SummonerDTO;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.SummonerDTO;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.JSONWrapper;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.AccountDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
@@ -39,89 +40,104 @@ public class DataRetrievalService {
         this.getPUUIDTemplate = restTemplateBuilder.build();
     }
 
-    private ValueErrorTuple<HttpEntity<?>,Exception> getHeaders(){
+    private ValErr<HttpEntity<?>,Exception> getHeaders(){
         HttpHeaders headers = new HttpHeaders();
-        ValueErrorTuple<String,Exception> errVal = secrets.getSecret("X-Riot-Token");
+        ValErr<String,Exception> errVal = secrets.getSecret("X-Riot-Token");
         headers.set("X-Riot-Token", errVal.value());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        return ValueErrorTuple.of(new HttpEntity<>("",headers), errVal.error());
+        return ValErr.of(new HttpEntity<>("",headers), errVal.error());
     }
 
-    public ValueErrorTuple<MatchData,Exception> getMatchData(String matchId) {
+    public ValErr<MatchData,Exception> getMatchData(String matchId) {
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/"+matchId;
-        ValueErrorTuple<HttpEntity<?>,Exception> headers = getHeaders();
+        ValErr<HttpEntity<?>,Exception> headers = getHeaders();
         if(headers.error() != null){
-            return ValueErrorTuple.error(headers.error());
+            return ValErr.error(headers.error());
         }
-        ValueErrorTuple<ResponseEntity<MatchData>, RestClientException>
-                requestAttempt = ValueErrorTuple.encapsulate(
+        ValErr<ResponseEntity<MatchData>, RestClientException>
+                requestAttempt = ValErr.encapsulate(
                         () -> getMatchDataTemplate.exchange(url, HttpMethod.GET, headers.value(), MatchData.class)
         );
         if(requestAttempt.error() != null){
-            return ValueErrorTuple.error(requestAttempt.error());
+            return ValErr.error(requestAttempt.error());
         }
         ResponseEntity<MatchData> response = requestAttempt.value();
         if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
-            return ValueErrorTuple.error(new Exception(response.toString()));
+            return ValErr.error(new Exception(response.toString()));
         }
-        return ValueErrorTuple.value(response.getBody());
+        return ValErr.value(response.getBody());
     }
 
-    public ValueErrorTuple<String[],Exception> getMatchIdsForPlayer(String playerPUUID){
+    public ValErr<String[],Exception> getMatchIdsForPlayer(String playerPUUID){
         String url = "https://europe.api.riotgames.com/tft/match/v1/matches/by-puuid/"+playerPUUID+"/ids?start=0&count=20";
-        ValueErrorTuple<HttpEntity<?>,Exception> headers = getHeaders();
+        ValErr<HttpEntity<?>,Exception> headers = getHeaders();
         if(headers.error() != null){
-            return ValueErrorTuple.error(headers.error());
+            return ValErr.error(headers.error());
         }
-        ValueErrorTuple<ResponseEntity<String>, RestClientException>
-                responseAttempt = ValueErrorTuple.encapsulate(
+        ValErr<ResponseEntity<String>, RestClientException>
+                responseAttempt = ValErr.encapsulate(
                         () -> getMatchIdsTemplate.exchange(url, HttpMethod.GET, headers.value(), String.class)
         );
         if(responseAttempt.error() != null){
-            return ValueErrorTuple.error(responseAttempt.error());
+            return ValErr.error(responseAttempt.error());
         }
         ResponseEntity<String> response = responseAttempt.value();
 
         if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
-            return ValueErrorTuple.error(new Exception(response.toString()));
+            return ValErr.error(new Exception(response.toString()));
         }
         String body = response.getBody();
-        return ValueErrorTuple.value(
+        return ValErr.value(
                 body == null ? new String[0] : JSONWrapper.parseValueArray(body)
         );
     }
 
-    public ValueErrorTuple<SummonerDTO, Exception> getAccount(String IGN, ServerLocations target){
-        String url = "https://"+target.domain+".api.riotgames.com/tft/summoner/v1/summoners/by-name/"+IGN;
-        ValueErrorTuple<HttpEntity<?>,Exception> headers = getHeaders();
+    public ValErr<AccountDTO, Exception> getAccount(String IGN, ServerLocations target, String tagLine) {
+        final String accountUrl = "https://"+target.continent +".api.riotgames.com/riot/account/v1/accounts/by-riot-id/"+IGN+"/"+tagLine;
+        ValErr<HttpEntity<?>,Exception> headers = getHeaders();
         if(headers.error() != null){
-            return ValueErrorTuple.error(headers.error());
+            return ValErr.error(headers.error());
         }
-        ValueErrorTuple<ResponseEntity<SummonerDTO>, RestClientException>
-                responseAttempt = ValueErrorTuple.encapsulate(
-                () -> getPUUIDTemplate.exchange(url, HttpMethod.GET, headers.value(), SummonerDTO.class)
+        ValErr<ResponseEntity<AccountDTO>, RestClientException>
+                accountResponseAttempt = ValErr.encapsulate(
+                () -> getPUUIDTemplate.exchange(accountUrl, HttpMethod.GET, headers.value(), AccountDTO.class)
         );
-        if(responseAttempt.error() != null){
-            return ValueErrorTuple.error(responseAttempt.error());
+        if(accountResponseAttempt.error() != null){
+            return ValErr.error(accountResponseAttempt.error());
         }
-        ResponseEntity<SummonerDTO> response = responseAttempt.value();
-        if(response.getStatusCode() == HttpStatusCode.valueOf(404)){
-            return ValueErrorTuple.error(new Exception("No Such Summoner"));
-        }
-        if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
-            return ValueErrorTuple.error(new Exception(response.toString()));
-        }
-        return ValueErrorTuple.value(response.getBody());
+        return ValErr.value(accountResponseAttempt.value().getBody());
     }
 
-    public ValueErrorTuple<Set<String>,Exception> start(ModelTrainingService.TrainingConfiguration config, String basePlayerPUUID, MatchParser forEachMatch, Set<String> excludedMatches){
+    public ValErr<SummonerDTO, Exception> getSummoner(String IGN, ServerLocations target, String tagLine){
+        final ValErr<AccountDTO, Exception> accountAttempt = getAccount(IGN, target, tagLine);
+        if(accountAttempt.error() != null){
+            return ValErr.error(accountAttempt.error());
+        }
+        ValErr<HttpEntity<?>,Exception> headers = getHeaders();
+        final String summonerUrl = "https://"+target.domain +".api.riotgames.com/tft/summoner/v1/summoners/by-puuid/"+accountAttempt.value().puuid();
+        ValErr<ResponseEntity<SummonerDTO>, RestClientException>
+                summonerResponseAttempt = ValErr.encapsulate(
+                () -> getPUUIDTemplate.exchange(summonerUrl, HttpMethod.GET, headers.value(), SummonerDTO.class)
+        );
+
+        ResponseEntity<SummonerDTO> response = summonerResponseAttempt.value();
+        if(response.getStatusCode() == HttpStatusCode.valueOf(404)){
+            return ValErr.error(new Exception("No Such Summoner"));
+        }
+        if(response.getStatusCode() != HttpStatusCode.valueOf(200)){
+            return ValErr.error(new Exception(response.toString()));
+        }
+        return ValErr.value(response.getBody());
+    }
+
+    public ValErr<Set<String>,Exception> start(ModelTrainingService.TrainingConfiguration config, String basePlayerPUUID, MatchParser forEachMatch, Set<String> excludedMatches){
         HashSet<String> playersParsed = new HashSet<>();
         //Algorithm structure:
         //  first, retrieve all match ids for players
         //  second, spin out to load the data for each match id
 
         if(excludedMatches == null){
-            return ValueErrorTuple.error(new IllegalArgumentException("Excluded match set must not be null."));
+            return ValErr.error(new IllegalArgumentException("Excluded match set must not be null."));
         }
         HashSet<String> matchesParsed = new HashSet<>(excludedMatches);
         int matchesParsedCount = 0;
@@ -133,21 +149,21 @@ public class DataRetrievalService {
                 break;
             }
 
-            ValueErrorTuple<String[],Exception> matchIdsRequest = getMatchIdsForPlayer(player);
+            ValErr<String[],Exception> matchIdsRequest = getMatchIdsForPlayer(player);
             if(matchIdsRequest.error() != null){
-                return ValueErrorTuple.of(matchesParsed, new Exception(matchIdsRequest.error()));
+                return ValErr.of(matchesParsed, new Exception(matchIdsRequest.error()));
             }
             String[] matchIds = ArrayUtil.resizeStringArray(matchIdsRequest.value(), match -> !matchesParsed.contains(match));
 
             for(String id : matchIds){
-                ValueErrorTuple<MatchData,Exception> matchRequest = getMatchData(id);
+                ValErr<MatchData,Exception> matchRequest = getMatchData(id);
                 if(matchRequest.error() != null){
-                    return ValueErrorTuple.of(matchesParsed, matchRequest.error());
+                    return ValErr.of(matchesParsed, matchRequest.error());
                 }
                 boolean abort = forEachMatch.apply(matchRequest.value());
                 matchesParsed.add(id);
                 matchesParsedCount++;
-                if(abort) return ValueErrorTuple.value(matchesParsed);
+                if(abort) return ValErr.value(matchesParsed);
 
                 //collection difference
                 List<String> possibleNewPlayers = matchRequest.value().metadata().participants();
@@ -162,13 +178,13 @@ public class DataRetrievalService {
         }
 
         if(matchesParsedCount < config.maxMatchCount){
-            return ValueErrorTuple.of(
+            return ValErr.of(
                     matchesParsed,
                     new RuntimeException("Unable to reach desired match count: " + matchesParsedCount + " / " + config.maxMatchCount)
             );
         }
 
-        return ValueErrorTuple.value(matchesParsed);
+        return ValErr.value(matchesParsed);
     }
 
     //Retrieve MatchData:

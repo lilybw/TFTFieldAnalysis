@@ -33,6 +33,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
     const [edgesForPoint, setEdgesForPoint] = React.useState<EdgeDTO[]>([]);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const [resultingPointOffsets, setResultingPointOffsets] = React.useState<{ [key: number]: {x: number, y: number} }>({});
+    const [visibleResultingPoints, setVisibleResultingPoints] = React.useState<number[]>([]);
     const [edgeMinOccurrence, setEdgeMinOccurrence] = React.useState<number>(1);
     const [includedNamespaces, setIncludedNamespaces] = React.useState<string[]>([]);
     
@@ -78,7 +79,7 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
     }
 
     React.useEffect(() => {
-        if(point == null) return;
+        if(point === null) return;
 
         resetCollections();
 
@@ -116,7 +117,22 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
 
     React.useEffect(() => {
         if(point == null) return;
-        onDrawCall(edgesForPoint);
+        const properties = preprocessEdgesShown(edgesForPoint);
+        const visiblePoints = [];
+        for (const edge of properties.processedEdges) {
+            visiblePoints.push(edge.pointA == point.id ? edge.pointB : edge.pointA);
+        }
+        setVisibleResultingPoints(visiblePoints);
+
+        drawEdges(point.id, properties).then(recalculatedOffsets => {
+            const allOffsets = resultingPointOffsets;
+            for(const key in recalculatedOffsets){
+                allOffsets[Number(key)] = recalculatedOffsets[key as unknown as number];
+            }
+    
+            setResultingPointOffsets(allOffsets);
+        })
+
     }, [edgeMinOccurrence])
 
     const getContent = () => {
@@ -126,46 +142,49 @@ export default function DataPointViewPort({ point, modelId, selectPoint, metadat
                     Select a namespace on the left, then a corresponding point on the right to view its edges.
                 </div>
             )
-        }else{
-            return(
-                <div className="dpwp-canvas-container">
-                <canvas className="dpwp-canvas" id="dpwp-canvas" ref={canvasRef}
-                    width="1000" height="1000">
-                </canvas>
-                <button className="dpwp-point center" onClick={() => selectPoint(point)}>
-                    <p>{point.namespace}</p>
-                    <p>{point.id}</p>
-                    <p>{point.tags}</p>
-                </button>
-                {Object.keys(resultingPointOffsets).map((pointId) => {
-                    const resultPoint = resultingPoints[Number(pointId)];
-
-                    //since it may happen that the resulting points hasn't been loaded yet
-                    if(resultPoint == null || resultPoint == undefined) return;
-                    if(contains(includedNamespaces, resultPoint.namespace, (r,t) => r == t)) return;
-                    console.log(canvasTransform);
-                    return(
-                        <button className="dpwp-point-resulting" key={resultPoint.id}
-                            onClick={() => selectPoint(resultPoint)}
-                            style={{
-                                left: resultingPointOffsets[resultPoint.id].x + canvasTransform.x + "px", 
-                                top: resultingPointOffsets[resultPoint.id].y + canvasTransform.y + "px"
-                            }}
-                        >
-                            <p className="no-flow">{resultPoint.namespace}</p>
-                            <p className="no-flow">{resultPoint.id}</p>
-                            <p className="no-flow">{resultPoint.tags}</p>
-                        </button>
-                    )
-                })}
-                </div>
-            )
         }
+        return(
+            <>
+            <canvas className="dpwp-canvas" id="dpwp-canvas" ref={canvasRef}
+                width="1000" height="1000">
+            </canvas>
+            <button className="dpwp-point center" onClick={() => selectPoint(point)}>
+                <p>{point.namespace}</p>
+                <p>{point.id}</p>
+                <p>{point.tags}</p>
+            </button>
+            {visibleResultingPoints.map((pointId) => {
+                const resultPoint = resultingPoints[Number(pointId)];
+
+                //since it may happen that the resulting points hasn't been loaded yet
+                if(resultPoint == null || resultPoint == undefined) return;
+                if(contains(includedNamespaces, resultPoint.namespace, (r,t) => r === t)) return;
+                const pointOffset = resultingPointOffsets[resultPoint.id] || {x: 0, y: 0};
+                const formattedName = resultPoint.tags[0].replace("TFT_Item_", "");
+                return(
+                    <button className="dpwp-point-resulting" key={resultPoint.id}
+                        onClick={() => selectPoint(resultPoint)}
+                        style={{
+                            left: pointOffset.x + canvasTransform.x * 0.5 + "px", 
+                            top: pointOffset.y + canvasTransform.y * 0.5 + "px"
+                        }}
+                    >
+                        <p className="no-flow">{resultPoint.namespace}</p>
+                        <p className="no-flow">{resultPoint.id}</p>
+                        <p className="no-flow">{formattedName}</p>
+                    </button>
+                )
+            })}
+            </>
+        )
+        
     }
     
     return (
         <div className="DataPointViewPort">
-            {getContent()}
+            <div className="dpwp-canvas-container">
+                {getContent()}
+            </div>
             <div className="dpwp-sensitivity-controls">
                 <div>
                 <h3>Occurrence</h3>

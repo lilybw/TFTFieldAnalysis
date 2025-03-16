@@ -8,7 +8,7 @@ interface LandingProps{
 export default function Landing({goBrowse, goCreate}: LandingProps): JSX.Element {
     return (
         <>
-        <h1 className="main-title">Vector Model Analysis of Team Fight Tactics</h1>
+        <h1 className="main-title">Graph Analysis of Team Fight Tactics</h1>
         <div className="main-options">
           <div className="horizonal-flex">
             <button className="create-model-button" onClick={() => goCreate()}>

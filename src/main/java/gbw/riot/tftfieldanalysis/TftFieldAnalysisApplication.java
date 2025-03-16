@@ -2,8 +2,7 @@ package gbw.riot.tftfieldanalysis;
 
 import gbw.riot.tftfieldanalysis.core.BinaryDB;
 import gbw.riot.tftfieldanalysis.core.DataModel;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
-import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 import gbw.riot.tftfieldanalysis.services.ModelRegistryService;
 import gbw.riot.tftfieldanalysis.services.SecretsService;
 import org.springframework.boot.SpringApplication;
@@ -21,12 +20,12 @@ public class TftFieldAnalysisApplication {
         ModelRegistryService registry = context.getBean(ModelRegistryService.class);
         SecretsService secrets = context.getBean(SecretsService.class);
 
-        ValueErrorTuple<String,Exception> shouldStoreResult = secrets.getConfigurable("Store-Models-On-Shutdown");
+        ValErr<String,Exception> shouldStoreResult = secrets.getConfigurable("Store-Models-On-Shutdown");
         if(!shouldStoreResult.hasError() && shouldStoreResult.value().equalsIgnoreCase("true")){
             appendShutdownHooks(db,registry);
         }
 
-        ValueErrorTuple<Collection<DataModel>,List<Exception>> persistingResult =
+        ValErr<Collection<DataModel>,List<Exception>> persistingResult =
                 db.retrieveCollection(BinaryDB.KnownLocation.MODELS.directory, DataModel.class);
 
         registry.registerModels(persistingResult.value());
@@ -44,7 +43,7 @@ public class TftFieldAnalysisApplication {
                     for(Map.Entry<Integer, DataModel> entry : registry.__getRegistry().entrySet()) {
                         if (entry.getValue() == null) continue;
 
-                        ValueErrorTuple<DataModel, Exception> result = instance.store(
+                        ValErr<DataModel, Exception> result = instance.store(
                                 BinaryDB.KnownLocation.MODELS.directory,
                                 entry.getValue(),
                                 e -> entry.getKey() + ""

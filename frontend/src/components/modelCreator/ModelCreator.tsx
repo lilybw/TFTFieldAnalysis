@@ -18,6 +18,8 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
     const [accountServers, setAccountServers] = React.useState<string[]>([]);
     const [selectedAccountServer, setSelectedAccountServer] = React.useState<string | null>(null);
     const [ignIsValid, setIgnIsValid] = React.useState<boolean>(false);
+    const [tagLine, setTagLine] = React.useState<string | null>("EUW");
+    const [tagLineIsValid, setTagLineIsValid] = React.useState<boolean>(false);
     const [ign, setIGN] = React.useState<string | null>(null);
     const [ignError, setIgnError] = React.useState<string | null>(null);
     const [settingsError, setSettingsError] = React.useState<string | null>(null);
@@ -38,11 +40,11 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
     }, [])
 
     React.useEffect(() => {
-        if(ign == null || selectedAccountServer == null){
+        if(ign === null || selectedAccountServer === null || tagLine === null){
             setIgnIsValid(false);
             return;
         }
-        validateIGNandGetPUUID(ign,selectedAccountServer).then(response => {
+        validateIGNandGetPUUID(ign, selectedAccountServer, tagLine).then(response => {
             if(response.data == null){
                 setIgnIsValid(false);
                 setIgnError(response.details.name);
@@ -114,6 +116,12 @@ export default function ({goView, backup}: ModelCreatorProps): JSX.Element {
                             className="ign-input" 
                             placeholder=". . ." 
                             onChange={e => setIGN(e.target.value)}
+                            />
+                        <h3>Tag Line</h3>
+                        <input type="text" 
+                            className="ign-input" 
+                            placeholder=". . ." 
+                            onChange={e => setTagLine(e.target.value)}
                             />
                     </div>
 

@@ -1,7 +1,6 @@
 package gbw.riot.tftfieldanalysis.core.environmentloading;
 
 import org.springframework.context.ApplicationContext;
-import org.aspectj.util.Reflection;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Method;

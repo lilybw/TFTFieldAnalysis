@@ -1,7 +1,7 @@
 package gbw.riot.tftfieldanalysis.services;
 
 import gbw.riot.tftfieldanalysis.core.environmentloading.RequestsEnvironmentResource;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +28,8 @@ public class SecretsService {
     }
     private static class DateValueEntry{
         public long ms;
-        public ValueErrorTuple<String,Exception> result;
-        public DateValueEntry(long ms, ValueErrorTuple<String,Exception> result){
+        public ValErr<String,Exception> result;
+        public DateValueEntry(long ms, ValErr<String,Exception> result){
             this.ms = ms;
             this.result = result;
         }
@@ -37,15 +37,15 @@ public class SecretsService {
 
     private final Map<String,DateValueEntry> cache = new HashMap<>();
 
-    public ValueErrorTuple<String,Exception> getConfigurable(String key) {
+    public ValErr<String,Exception> getConfigurable(String key) {
         return getByKey(key, "/runtimeConfigurables.txt");
     }
 
-    public ValueErrorTuple<String,Exception> getSecret(String key){
+    public ValErr<String,Exception> getSecret(String key){
         return getByKey(key, "/secrets.txt");
     }
 
-    private ValueErrorTuple<String,Exception> getByKey(String key, String pathAndFile){
+    private ValErr<String,Exception> getByKey(String key, String pathAndFile){
         DateValueEntry entry = cache.get(key);
         final long now = System.currentTimeMillis();
         if(entry == null){
@@ -74,7 +74,7 @@ public class SecretsService {
         );
     }
 
-    private ValueErrorTuple<String,Exception> getValueOf(String key, String pathAndFile){
+    private ValErr<String,Exception> getValueOf(String key, String pathAndFile){
         try{
             BufferedReader br = new BufferedReader(new FileReader(root + pathAndFile));
             String line;
@@ -84,16 +84,16 @@ public class SecretsService {
                 split = ArrayUtil.forEach(split, String::trim);
                 split = ArrayUtil.resizeStringArray(split, s -> !s.isEmpty());
                 if(split.length < 2){
-                    return ValueErrorTuple.error(new Exception("Incorrect k:v declaration for key: " + key));
+                    return ValErr.error(new Exception("Incorrect k:v declaration for key: " + key));
                 }
                 if(split[0].equals(key)){
-                    return ValueErrorTuple.value(split[1]);
+                    return ValErr.value(split[1]);
                 }
             }
             br.close();
         }catch (IOException e){
-            return ValueErrorTuple.error(e);
+            return ValErr.error(e);
         }
-        return ValueErrorTuple.error(new Exception("No Such Key"));
+        return ValErr.error(new Exception("No Such Key"));
     }
 }

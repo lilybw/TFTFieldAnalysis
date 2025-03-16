@@ -41,7 +41,7 @@ public interface BinaryDB {
      * @param <T> type param.
      * @return The object, null on error, and the error.
      */
-    <T> ValueErrorTuple<T, Exception> retrieve(String path, String identifier, Class<T> clazz);
+    <T> ValErr<T, Exception> retrieve(String path, String identifier, Class<T> clazz);
 
     /**
      * @param clazz expected type of collection
@@ -49,7 +49,7 @@ public interface BinaryDB {
      * @param <T> type param
      * @return a collection of any instanced stored in any file in that directory of said type. And any error.
      */
-    <T> ValueErrorTuple<Collection<T>, List<Exception>> retrieveCollection(String directory, Class<T> clazz);
+    <T> ValErr<Collection<T>, List<Exception>> retrieveCollection(String directory, Class<T> clazz);
 
     /**
      * @param path sub-path from DB specified directory
@@ -58,7 +58,7 @@ public interface BinaryDB {
      * @param <T> type param
      * @return The object and any error that arose while storing it
      */
-    <T> ValueErrorTuple<T, Exception> store(String path, T object, Function<T, String> identifierRetriever);
+    <T> ValErr<T, Exception> store(String path, T object, Function<T, String> identifierRetriever);
 
     /**
      *

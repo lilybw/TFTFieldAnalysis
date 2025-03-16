@@ -2,8 +2,9 @@ package gbw.riot.tftfieldanalysis.controllers;
 
 import gbw.riot.tftfieldanalysis.core.DataModel;
 import gbw.riot.tftfieldanalysis.core.ServerLocations;
-import gbw.riot.tftfieldanalysis.core.SummonerDTO;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.AccountDTO;
+import gbw.riot.tftfieldanalysis.responseUtil.dtos.SummonerDTO;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 import gbw.riot.tftfieldanalysis.responseUtil.ArrayUtil;
 import gbw.riot.tftfieldanalysis.responseUtil.DetailedResponse;
 import gbw.riot.tftfieldanalysis.responseUtil.ResponseDetails;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -75,13 +77,13 @@ public class ModelTrainingController {
     getAccountServerLocations()
     {
         ServerLocations[] values = ArrayUtil.removeTail(ServerLocations.values(),1);
-        List<String> asStringList = new ArrayList<>(values.length);
-        for(ServerLocations value : values){
-            asStringList.add(value.domain);
+        List<String> asStrList = new ArrayList<>(values.length);
+        for(ServerLocations value : values) {
+            asStrList.add(value.domain);
         }
         return new ResponseEntity<>(
                 DetailedResponse.success(
-                        asStringList
+                        asStrList.stream().toList()
                 ), HttpStatusCode.valueOf(200)
         );
     }
@@ -101,7 +103,8 @@ public class ModelTrainingController {
     public @ResponseBody ResponseEntity<DetailedResponse<String>>
     validatePlayerIGN(
             @RequestParam String ign,
-            @RequestParam @Schema(implementation = ServerLocations.class) String server
+            @RequestParam @Schema(implementation = ServerLocations.class) String server,
+            @RequestParam String tagLine
     ){
         ServerLocations location = ServerLocations.byDomain(server.toLowerCase());
 
@@ -115,8 +118,9 @@ public class ModelTrainingController {
             );
         }
 
-        ValueErrorTuple<SummonerDTO, Exception> result = dataRetrievalService.getAccount(ign, location);
+        ValErr<AccountDTO, Exception> result = dataRetrievalService.getAccount(ign, location, tagLine);
         if(result.error() != null){
+            System.out.println(result.error().getMessage());
             return new ResponseEntity<>(
                     DetailedResponse.details(
                             new ResponseDetails(result.error().getMessage(),"Description intentionally cut short.", null)
@@ -163,7 +167,7 @@ public class ModelTrainingController {
             return responses.getResponseOnMissingPUUID();
         }
 
-        ValueErrorTuple<Set<String>,Exception> result = trainer.run(model, puuid, config);
+        ValErr<Set<String>,Exception> result = trainer.run(model, puuid, config);
         if(result.error() != null && result.value() != null){
             return new ResponseEntity<>(
                     DetailedResponse.of(

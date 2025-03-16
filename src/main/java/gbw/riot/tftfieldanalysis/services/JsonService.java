@@ -1,9 +1,8 @@
 package gbw.riot.tftfieldanalysis.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gbw.riot.tftfieldanalysis.core.ValueErrorTuple;
+import gbw.riot.tftfieldanalysis.core.ValErr;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -15,20 +14,20 @@ public class JsonService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public <T> ValueErrorTuple<T,Exception> readValue(String string, Class<T> clazz) {
-        return ValueErrorTuple.encapsulate(
+    public <T> ValErr<T,Exception> readValue(String string, Class<T> clazz) {
+        return ValErr.encapsulate(
                 () -> mapper.readValue(string,clazz)
         );
     }
     
-    public <T> ValueErrorTuple<Collection<T>,Exception> readCollection(String string, Class<T> clazz) {
-        return ValueErrorTuple.encapsulate(
+    public <T> ValErr<Collection<T>,Exception> readCollection(String string, Class<T> clazz) {
+        return ValErr.encapsulate(
                 () -> mapper.readValue(string, new TypeReference<Collection<T>>(){})
         );
     }
 
-    public <T> ValueErrorTuple<List<T>,Exception> readList(String string, Class<T> clazz) {
-        return ValueErrorTuple.encapsulate(
+    public <T> ValErr<List<T>,Exception> readList(String string, Class<T> clazz) {
+        return ValErr.encapsulate(
                 () -> Arrays.asList(mapper.readValue(string, clazz))
         );
     }
