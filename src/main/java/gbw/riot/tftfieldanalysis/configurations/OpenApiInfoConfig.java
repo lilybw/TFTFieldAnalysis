@@ -12,8 +12,8 @@ public class OpenApiInfoConfig {
     @Bean
     public Info apiInfo(){
         Contact contact = new Contact()
-                .email("gustavbw@gmail.com")
-                .name("Gustav B. Wanscher")
+                .email("lilybw@gmail.com")
+                .name("lily B. Wanscher")
                 .url("https://http.cat/404");
 
         License license = new License()

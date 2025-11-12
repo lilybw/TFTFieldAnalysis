@@ -7,7 +7,7 @@ interface FooterProps {
 export default function Footer({ }: FooterProps): JSX.Element {
     return (
         <div className="Footer">
-            <p>©Gustav B. Wanscher 2023</p>
+            <p>©lily B. Wanscher 2023</p>
         </div>
     )
 }
